@@ -14,4 +14,7 @@ RUN apt-get install --no-install-recommends -y build-essential python3.8 python3
  && apt-get clean \
  && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
 
-WORKDIR /home
+RUN pip install numpy scipy \
+ && rm -rf ~/.cache/pip
+
+WORKDIR /home/svd_competition
