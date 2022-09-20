@@ -24,7 +24,11 @@ def compute_transpose(args):
         if isinstance(input[key], np.ndarray):
             content = input[key]
             break
-    content = np.transpose(content, (2, 0, 1))
+    if len(content.shape) == 3:
+        changedim = (2, 0, 1)
+    else:
+        changedim = (1, 0)
+    content = np.transpose(content, changedim)
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
     savemat(output_path, {'data': content})
@@ -32,16 +36,15 @@ def compute_transpose(args):
 
 def compute_svd(args):
     input_path = f'{args.input_path}{args.input_name}'
+    output_path = f'{args.output_path}{args.input_name}'
     input = loadmat(input_path)
     for key in input:
         if isinstance(input[key], np.ndarray):
             content = input[key]
             break
-    print(content.shape)
-    content = np.transpose(content, (2, 0, 1))
-    print(content.shape)
-    # print(input['task1_data'])
-    # print(type(input['task1_data']))
+    u, s, vh = np.linalg.svd(content)
+    v = np.transpose(vh, (0, 2, 1))
+    savemat(output_path, {'u': u, 'v': v, 's': s})
 
 
 if __name__ == '__main__':
