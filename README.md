@@ -35,9 +35,9 @@ make measure # 尚未实现！！ 测速测试 预期会每个任务每个矩阵
 
 实际运行的过程是在容器中运行了utils/gen_truth.py的代码
 
-生成的数据会放在`data/trans/task[1234]/data.mat`中 会自动寻找`data`文件夹下所有存在的mat文件
+生成的数据会放在`data/trans/task[1234]/dataname.mat`中 会自动寻找`data`文件夹下所有存在的mat文件
 ### svd
-**实际并不需要** 
+**实际并不需要 没有必须的场景没必要运行** 
 
 通过python库生成正确的结果并存储下来 后来发现测试其实不需要这部分结果
 ### simple-check
