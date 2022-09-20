@@ -66,7 +66,8 @@ def prepare_dir(args):
         index += 1
         run_name = f'{args.run_name}-{index}'
         run_path = f'{args.save_path}{run_name}'
-    os.makedirs(run_path)
+    if args.measure:
+        os.makedirs(run_path)
     args.run_name = run_name
 
     if not os.path.exists(args.output_path):
