@@ -2,7 +2,7 @@
 ## 准备环境需要做什么
 - 安装docker
 - 安装make（linux自带，mac应该可以通过homebrew安装）
-- 创建data文件夹 将每个task数据分别放到data下（即格式为data/task1/data.mat,data/task2/data.mat...)
+- 创建data文件夹 将每个task数据分别放到data下（即格式为data/task1/data.mat,data/task2/data.mat...,不需要改名)
 - 本地的python环境安装wandb包（线上看板包，用于后面传输测速结果）
 ## 测试流程
 第一次测试时由于有依赖目标时间可能会较长 之后重复文件不更新时依赖目标不会运行
