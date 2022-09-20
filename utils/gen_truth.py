@@ -29,6 +29,7 @@ def compute_transpose(args):
     else:
         changedim = (1, 0)
     content = np.transpose(content, changedim)
+    print(content[0, 0])
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
     savemat(output_path, {'data': content})
@@ -44,6 +45,8 @@ def compute_svd(args):
             break
     u, s, vh = np.linalg.svd(content)
     v = np.transpose(vh, (0, 2, 1))
+    if not os.path.exists(args.output_path):
+        os.makedirs(args.output_path)
     savemat(output_path, {'u': u, 'v': v, 's': s})
 
 
