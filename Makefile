@@ -3,7 +3,7 @@
 docker-name = svd-competition
 pwd=$(shell pwd)
 
-simple-check:simple-check-task1 simple-check-task2 simple-check-task3
+simple-check:simple-check-task1 simple-check-task2 simple-check-task3 simple-check-task4
 
 simple-check-task1:transpose
 	docker run -it --rm -v $(pwd):/home/svd_competition $(docker-name) \
@@ -16,6 +16,10 @@ simple-check-task2:transpose
 simple-check-task3:transpose
 	docker run -it --rm -v $(pwd):/home/svd_competition $(docker-name) \
 	python utils/check.py --simple_check --input_path data/trans/task3/ --output_path res/ --task 3
+
+simple-check-task4:transpose
+	docker run -it --rm -v $(pwd):/home/svd_competition $(docker-name) \
+	python utils/check.py --simple_check --input_path data/trans/task4/ --output_path res/ --task 4
 
 origin-data=$(shell find data/*/*.mat)
 trans-data=$(patsubst data/%.mat,data/trans/%.mat,$(origin-data))
