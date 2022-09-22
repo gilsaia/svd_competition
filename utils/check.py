@@ -88,12 +88,78 @@ def clean_tmpfile(args):
     os.remove(f'{args.output_path}res.mat')
 
 
+data_name_list = ['data_m_256_n_128_dataNum_200.mat',
+                  'data_m_512_n_256_dataNum_200.mat',
+                  'data_m_1024_n_512_dataNum_200.mat']
+
+label_name_list = ['data_m_256_n_128_label_r.mat',
+                   'data_m_512_n_256_label_r.mat',
+                   'data_m_1024_n_512_label_r.mat']
+
+DATA_LEN = 3
+
+
 def measure(args):
     raise NotImplementedError()
 
 
 def complete_check(args):
-    raise NotImplementedError()
+    for i in range(DATA_LEN):
+        data_name = data_name_list[i]
+        label_name = label_name_list[i]
+        sh = sh_dict[args.task]
+        input_name = f'{args.input_path}{data_name}'
+        output_name = f'{args.output_path}res.mat'
+        if args.task == 1:
+            cmd_args = f'{args.input_path} {data_name} {label_name} {args.output_path}'
+        else:
+            cmd_args = f'{args.input_path} {data_name} {args.output_path}'
+        if args.matlab:
+            sh = sh.rstrip('.m')
+            cmd = f'matlab -nodesktop -nosplash --path code/ -r {sh} {cmd_args}'
+        else:
+            cmd = f'octave-cli --path code/ {sh} {cmd_args}'
+        print(f'Run Command:{cmd}')
+        os.system(cmd)
+        print('Run Command end!')
+        if not os.path.exists(output_name):
+            print('Not find target file\nCheck error')
+            return
+        e1_sum = 0
+        g1_sum = 0
+        e2_sum = 0
+        if args.task != 4:
+            truth_mat = loadmat(input_name)
+            truth_mat = truth_mat['data']
+            output_res = loadmat(output_name)
+            u = output_res['u']
+            v = output_res['v']
+            s = output_res['s']
+            for i in range(truth_mat.shape[0]):
+                check, e1, g1 = check_svd(args, truth_mat[i], u[i], s[i], v[i])
+                if not check:
+                    print(
+                        f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE1:{e1}\tG1:{g1}\nCheck error')
+                    return
+                e1_sum += e1
+                g1_sum += g1
+        else:
+            truth_mat = loadmat(input_name)
+            truth_mat = truth_mat['data']
+            output_res = loadmat(output_name)
+            inv = output_res['inv']
+            for i in range(truth_mat.shape[0]):
+                check, e2 = check_inv(args, truth_mat[i], inv[i])
+                if not check:
+                    print(
+                        f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE2:{e2}\nCheck error')
+                    return
+                e2_sum += e2
+        e1_avg = e1_sum/truth_mat.shape[0]
+        g1_avg = g1_sum/truth_mat.shape[0]
+        e2_avg = e2_sum/truth_mat.shape[0]
+        print(
+            f'Simple check pass!\nTask:{args.task}\tE1:{e1_avg}\tG1:{g1_avg}\tE2:{e2_avg}')
 
 
 def simple_check(args):

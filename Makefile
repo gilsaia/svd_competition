@@ -17,17 +17,26 @@ else
 	one-matrix-cmd=octave-cli --path code/ --path utils/ utils/one_matrix_test.m
 endif
 
+complete-check:complete-check-task1 complete-check-task2 complete-check-task3 complete-check-task4
+
+complete-check-task1:transpose
+	$(docker-cmd) python utils/check.py --complete_check --input_path data/trans/task1/ --output_path res/ --task 1 $(matlab-option)
+complete-check-task2:transpose
+	$(docker-cmd) python utils/check.py --complete_check --input_path data/trans/task2/ --output_path res/ --task 2 $(matlab-option)
+complete-check-task3:transpose
+	$(docker-cmd) python utils/check.py --complete_check --input_path data/trans/task3/ --output_path res/ --task 3 $(matlab-option)
+complete-check-task4:transpose
+	$(docker-cmd) python utils/check.py --complete_check --input_path data/trans/task4/ --output_path res/ --task 4 $(matlab-option)
+
+
 simple-check:simple-check-task1 simple-check-task2 simple-check-task3 simple-check-task4
 
 simple-check-task1:transpose
 	$(docker-cmd) python utils/check.py --simple_check --input_path data/trans/task1/ --output_path res/ --task 1 $(matlab-option)
-
 simple-check-task2:transpose
 	$(docker-cmd) python utils/check.py --simple_check --input_path data/trans/task2/ --output_path res/ --task 2 $(matlab-option)
-
 simple-check-task3:transpose
 	$(docker-cmd) python utils/check.py --simple_check --input_path data/trans/task3/ --output_path res/ --task 3 $(matlab-option)
-
 simple-check-task4:transpose
 	$(docker-cmd) python utils/check.py --simple_check --input_path data/trans/task4/ --output_path res/ --task 4 $(matlab-option)
 
