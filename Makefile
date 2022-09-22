@@ -12,6 +12,9 @@ endif
 
 ifeq ($(matlab),on)
 	matlab-option=--matlab
+	one-matrix-cmd=matlab -nodesktop -nosplash --path code/ --path utils/ -r utils/one_matrix_test
+else
+	one-matrix-cmd=octave-cli --path code/ --path utils/ utils/one_matrix_test.m
 endif
 
 simple-check:simple-check-task1 simple-check-task2 simple-check-task3 simple-check-task4
@@ -27,6 +30,18 @@ simple-check-task3:transpose
 
 simple-check-task4:transpose
 	$(docker-cmd) python utils/check.py --simple_check --input_path data/trans/task4/ --output_path res/ --task 4 $(matlab-option)
+
+one-matrix-task1:
+	$(docker-cmd) $(one-matrix-cmd) 1
+
+one-matrix-task2:
+	$(docker-cmd) $(one-matrix-cmd) 2
+
+one-matrix-task3:
+	$(docker-cmd) $(one-matrix-cmd) 3
+	
+one-matrix-task4:
+	$(docker-cmd) $(one-matrix-cmd) 4
 
 origin-data=$(shell find data/*/*.mat)
 trans-data=$(patsubst data/%.mat,data/trans/%.mat,$(origin-data))
