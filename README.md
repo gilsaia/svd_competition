@@ -4,6 +4,10 @@
 - 安装make（linux自带，mac应该可以通过homebrew安装）
 - 创建data文件夹 将每个task数据分别放到data下（即格式为data/task1/data.mat,data/task2/data.mat...,不需要改名)
 - 本地的python环境安装wandb包（线上看板包，用于后面传输测速结果）
+## 自定义环境变量
+项目提供了`.env.example` 提供一些个人环境的配置项 需要使用的话将其复制为`.env`即可 Makefile在运行时会自动读取
+- `local` 为`on`时表示测试不在docker环境下运行 会直接运行对应的python文件/octave/matlab脚本
+- `matlab` 为`on`时表示测试命令不使用octave而是替换为matlab **目前的测试命令是我查询推测的 可能需要进一步修改**
 ## 测试流程
 第一次测试时由于有依赖目标时间可能会较长 之后重复文件不更新时依赖目标不会运行
 ```shell
@@ -48,3 +52,5 @@ make measure # 尚未实现！！ 测速测试 预期会每个任务每个矩阵
 之后会根据任务类别运行对应的脚本获取测试结果 
 
 实际运行过程是在容器中运行了utils/check.py的代码
+### one-matrix-task1/2/3/4
+用于检测脚本是否能正确运行 会直接通过octave/matlab调用utils/one_matrix_test.m 生成一个符合要求的随机矩阵后调用指定函数 仅推荐用于检测脚本是否会产生运行错误 在调试时也可以直接通过命令行运行对应脚本

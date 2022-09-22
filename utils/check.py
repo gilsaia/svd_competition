@@ -39,8 +39,17 @@ def check_svd(args, truth, u, s, v):
     return True, e1, g1
 
 
-def check_inv(args):
-    raise NotImplementedError()
+def check_inv(args, truth, inv):
+    e2_thd = e2_dict[args.task]
+
+    temp = np.eye(truth.shape[0], truth.shape[0])
+    temp = temp+np.dot(truth, truth.T.conj())
+    res = np.dot(temp, inv)-np.eye(truth.shape[0], truth.shape[0])
+    e2 = np.linalg.norm(res, 'fro')/np.sqrt(truth.shape[0])
+
+    if e2 > e2_thd:
+        return False, e2
+    return True, e2
 
 
 def get_args():
@@ -54,6 +63,7 @@ def get_args():
     parser.add_argument('--simple_check', action='store_true')
     parser.add_argument('--complete_check', action='store_true')
     parser.add_argument('--measure', action='store_true')
+    parser.add_argument('--matlab', action='store_true')
     parser.add_argument('--task', type=int, choices=[1, 2, 3, 4], default=1)
     return parser.parse_args()
 
@@ -74,6 +84,10 @@ def prepare_dir(args):
         os.makedirs(args.output_path)
 
 
+def clean_tmpfile(args):
+    os.remove(f'{args.output_path}res.mat')
+
+
 def measure(args):
     raise NotImplementedError()
 
@@ -92,32 +106,47 @@ def simple_check(args):
         cmd_args = f'{args.input_path} {data_name} {label_name} {args.output_path}'
     else:
         cmd_args = f'{args.input_path} {data_name} {args.output_path}'
-    cmd = f'octave-cli --path code/ {sh} {cmd_args}'
+    if args.matlab:
+        sh = sh.rstrip('.m')
+        cmd = f'matlab -nodesktop -nosplash --path code/ -r {sh} {cmd_args}'
+    else:
+        cmd = f'octave-cli --path code/ {sh} {cmd_args}'
+    print(f'Run Command:{cmd}')
     os.system(cmd)
-    print('Run algorithm end!')
+    print('Run Command end!')
     if not os.path.exists(output_name):
         print('Not find target file\nCheck error')
         return
-    truth_mat = loadmat(input_name)
-    truth_mat = truth_mat['data']
-    output_res = loadmat(output_name)
-    u = output_res['u']
-    v = output_res['v']
-    s = output_res['s']
     e1_sum = 0
     g1_sum = 0
     e2_sum = 0
-    for i in range(truth_mat.shape[0]):
-        if args.task == 4:
-            check, e2 = check_inv(args)
-        else:
+    if args.task != 4:
+        truth_mat = loadmat(input_name)
+        truth_mat = truth_mat['data']
+        output_res = loadmat(output_name)
+        u = output_res['u']
+        v = output_res['v']
+        s = output_res['s']
+        for i in range(truth_mat.shape[0]):
             check, e1, g1 = check_svd(args, truth_mat[i], u[i], s[i], v[i])
             if not check:
                 print(
-                    f'Find result exceed threshold\nIndex:{i}\tE1:{e1}\tG1:{g1}\nCheck error')
+                    f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE1:{e1}\tG1:{g1}\nCheck error')
                 return
             e1_sum += e1
             g1_sum += g1
+    else:
+        truth_mat = loadmat(input_name)
+        truth_mat = truth_mat['data']
+        output_res = loadmat(output_name)
+        inv = output_res['inv']
+        for i in range(truth_mat.shape[0]):
+            check, e2 = check_inv(args, truth_mat[i], inv[i])
+            if not check:
+                print(
+                    f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE2:{e2}\nCheck error')
+                return
+            e2_sum += e2
     e1_avg = e1_sum/truth_mat.shape[0]
     g1_avg = g1_sum/truth_mat.shape[0]
     e2_avg = e2_sum/truth_mat.shape[0]
@@ -134,3 +163,4 @@ if __name__ == '__main__':
         complete_check(args)
     elif args.simple_check:
         simple_check(args)
+    clean_tmpfile(args)

@@ -14,7 +14,7 @@ RUN apt-get install --no-install-recommends -y build-essential python3.8 python3
  && apt-get clean \
  && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/*
 
-RUN pip install numpy scipy wandb \
+RUN pip install numpy scipy wandb tqdm\
  && rm -rf ~/.cache/pip
 
 WORKDIR /home/svd_competition
