@@ -1,4 +1,4 @@
-include .env
+-include .env
 .PHONY: test-docker build-docker transpose svd simple-check simple-check-task1 simple-check-task2 simple-check-task3
 
 docker-name = svd-competition
@@ -39,7 +39,7 @@ one-matrix-task2:
 
 one-matrix-task3:
 	$(docker-cmd) $(one-matrix-cmd) 3
-	
+
 one-matrix-task4:
 	$(docker-cmd) $(one-matrix-cmd) 4
 
