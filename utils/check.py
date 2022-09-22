@@ -63,6 +63,7 @@ def get_args():
     parser.add_argument('--simple_check', action='store_true')
     parser.add_argument('--complete_check', action='store_true')
     parser.add_argument('--measure', action='store_true')
+    parser.add_argument('--matlab', action='store_true')
     parser.add_argument('--task', type=int, choices=[1, 2, 3, 4], default=1)
     return parser.parse_args()
 
@@ -83,6 +84,10 @@ def prepare_dir(args):
         os.makedirs(args.output_path)
 
 
+def clean_tmpfile(args):
+    os.remove(f'{args.output_path}res.mat')
+
+
 def measure(args):
     raise NotImplementedError()
 
@@ -101,9 +106,14 @@ def simple_check(args):
         cmd_args = f'{args.input_path} {data_name} {label_name} {args.output_path}'
     else:
         cmd_args = f'{args.input_path} {data_name} {args.output_path}'
-    cmd = f'octave-cli --path code/ {sh} {cmd_args}'
+    if args.matlab:
+        sh = sh.rstrip('.m')
+        cmd = f'matlab -nodesktop -nosplash --path code/ -r {sh} {cmd_args}'
+    else:
+        cmd = f'octave-cli --path code/ {sh} {cmd_args}'
+    print(f'Run Command:{cmd}')
     os.system(cmd)
-    print('Run algorithm end!')
+    print('Run Command end!')
     if not os.path.exists(output_name):
         print('Not find target file\nCheck error')
         return
@@ -153,3 +163,4 @@ if __name__ == '__main__':
         complete_check(args)
     elif args.simple_check:
         simple_check(args)
+    clean_tmpfile(args)
