@@ -3,6 +3,8 @@ import os
 import numpy as np
 from scipy.io import loadmat
 
+from utils import AverageMeter
+
 
 sh_dict = {1: 'utils/run_svd_task_with_r.m',
            2: 'utils/run_svd_task.m',
@@ -15,6 +17,7 @@ e2_dict = {4: 1e-6}
 
 
 def check_svd(args, truth, u, s, v):
+    # deprecated
     e1_thd = e1_dict[args.task]
     g1_thd = g1_dict[args.task]
 
@@ -40,6 +43,7 @@ def check_svd(args, truth, u, s, v):
 
 
 def check_inv(args, truth, inv):
+    # deprecated
     e2_thd = e2_dict[args.task]
 
     temp = np.eye(truth.shape[0], truth.shape[0])
@@ -99,6 +103,20 @@ label_name_list = ['data_m_256_n_128_label_r.mat',
 DATA_LEN = 3
 
 
+def get_run_cmd(args, data_name, label_name):
+    sh = sh_dict[args.task]
+    if args.task == 1:
+        cmd_args = f'{args.input_path} {data_name} {label_name} {args.output_path}'
+    else:
+        cmd_args = f'{args.input_path} {data_name} {args.output_path}'
+    if args.matlab:
+        sh = sh.rstrip('.m')
+        cmd = f'matlab -nodesktop -nosplash --path code/ --path utils/ -r {sh} {cmd_args}'
+    else:
+        cmd = f'octave-cli --path code/ --path utils/ {sh} {cmd_args}'
+    return cmd
+
+
 def measure(args):
     raise NotImplementedError()
 
@@ -107,117 +125,110 @@ def complete_check(args):
     for i in range(DATA_LEN):
         data_name = data_name_list[i]
         label_name = label_name_list[i]
-        sh = sh_dict[args.task]
         input_name = f'{args.input_path}{data_name}'
         output_name = f'{args.output_path}res.mat'
-        if args.task == 1:
-            cmd_args = f'{args.input_path} {data_name} {label_name} {args.output_path}'
-        else:
-            cmd_args = f'{args.input_path} {data_name} {args.output_path}'
-        if args.matlab:
-            sh = sh.rstrip('.m')
-            cmd = f'matlab -nodesktop -nosplash --path code/ -r {sh} {cmd_args}'
-        else:
-            cmd = f'octave-cli --path code/ {sh} {cmd_args}'
+        if not os.path.exists(input_name):
+            continue
+        cmd = get_run_cmd(args, data_name, label_name)
         print(f'Run Command:{cmd}')
         os.system(cmd)
         print('Run Command end!')
         if not os.path.exists(output_name):
             print('Not find target file\nCheck error')
             return
-        e1_sum = 0
-        g1_sum = 0
-        e2_sum = 0
+        e1_meter = AverageMeter()
+        e2_meter = AverageMeter()
+        g1_meter = AverageMeter()
+        time_meter = AverageMeter()
         if args.task != 4:
             truth_mat = loadmat(input_name)
             truth_mat = truth_mat['data']
             output_res = loadmat(output_name)
-            u = output_res['u']
-            v = output_res['v']
-            s = output_res['s']
+            E1 = np.squeeze(output_res['E1'])
+            G1 = np.squeeze(output_res['G1'])
+            runtime = np.squeeze(output_res['run_time'])
+            e1_thd = e1_dict[args.task]
+            g1_thd = g1_dict[args.task]
             for i in range(truth_mat.shape[0]):
-                check, e1, g1 = check_svd(args, truth_mat[i], u[i], s[i], v[i])
+                e1 = E1[i]
+                g1 = G1[i]
+                check = e1 < e1_thd and g1 < g1_thd
                 if not check:
                     print(
                         f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE1:{e1}\tG1:{g1}\nCheck error')
                     return
-                e1_sum += e1
-                g1_sum += g1
+                e1_meter.update(e1)
+                g1_meter.update(g1)
+                time_meter.update(runtime[i])
         else:
             truth_mat = loadmat(input_name)
             truth_mat = truth_mat['data']
             output_res = loadmat(output_name)
-            inv = output_res['inv']
+            E2 = np.squeeze(output_res['E2'])
+            runtime = np.squeeze(output_res['run_time'])
+            e2_thd = e2_dict[args.task]
             for i in range(truth_mat.shape[0]):
-                check, e2 = check_inv(args, truth_mat[i], inv[i])
+                e2 = E2[i]
+                check = e2 < e2_thd
                 if not check:
                     print(
                         f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE2:{e2}\nCheck error')
                     return
-                e2_sum += e2
-        e1_avg = e1_sum/truth_mat.shape[0]
-        g1_avg = g1_sum/truth_mat.shape[0]
-        e2_avg = e2_sum/truth_mat.shape[0]
+                e2_meter.update(e2)
+                time_meter.update(runtime[i])
         print(
-            f'Simple check pass!\nTask:{args.task}\tE1:{e1_avg}\tG1:{g1_avg}\tE2:{e2_avg}')
+            f'Complete check pass!\nTask:{args.task}\tData:{data_name}\tE1:{e1_meter.avg}\tG1:{g1_meter.avg}\tE2:{e2_meter.avg}\tRun time:{time_meter.avg}')
 
 
 def simple_check(args):
     data_name = 'data_m_256_n_128_dataNum_200.mat'
     label_name = 'data_m_256_n_128_label_r.mat'
-    sh = sh_dict[args.task]
     input_name = f'{args.input_path}{data_name}'
     output_name = f'{args.output_path}res.mat'
-    if args.task == 1:
-        cmd_args = f'{args.input_path} {data_name} {label_name} {args.output_path}'
-    else:
-        cmd_args = f'{args.input_path} {data_name} {args.output_path}'
-    if args.matlab:
-        sh = sh.rstrip('.m')
-        cmd = f'matlab -nodesktop -nosplash --path code/ -r {sh} {cmd_args}'
-    else:
-        cmd = f'octave-cli --path code/ {sh} {cmd_args}'
+    cmd = get_run_cmd(args, data_name, label_name)
     print(f'Run Command:{cmd}')
     os.system(cmd)
     print('Run Command end!')
     if not os.path.exists(output_name):
         print('Not find target file\nCheck error')
         return
-    e1_sum = 0
-    g1_sum = 0
-    e2_sum = 0
+    e1_meter = AverageMeter()
+    e2_meter = AverageMeter()
+    g1_meter = AverageMeter()
     if args.task != 4:
         truth_mat = loadmat(input_name)
         truth_mat = truth_mat['data']
         output_res = loadmat(output_name)
-        u = output_res['u']
-        v = output_res['v']
-        s = output_res['s']
+        E1 = np.squeeze(output_res['E1'])
+        G1 = np.squeeze(output_res['G1'])
+        e1_thd = e1_dict[args.task]
+        g1_thd = g1_dict[args.task]
         for i in range(truth_mat.shape[0]):
-            check, e1, g1 = check_svd(args, truth_mat[i], u[i], s[i], v[i])
+            e1 = E1[i]
+            g1 = G1[i]
+            check = e1 < e1_thd and g1 < g1_thd
             if not check:
                 print(
                     f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE1:{e1}\tG1:{g1}\nCheck error')
                 return
-            e1_sum += e1
-            g1_sum += g1
+            e1_meter.update(e1)
+            g1_meter.update(g1)
     else:
         truth_mat = loadmat(input_name)
         truth_mat = truth_mat['data']
         output_res = loadmat(output_name)
-        inv = output_res['inv']
+        E2 = np.squeeze(output_res['E2'])
+        e2_thd = e2_dict[args.task]
         for i in range(truth_mat.shape[0]):
-            check, e2 = check_inv(args, truth_mat[i], inv[i])
+            e2 = E2[i]
+            check = e2 < e2_thd
             if not check:
                 print(
                     f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE2:{e2}\nCheck error')
                 return
-            e2_sum += e2
-    e1_avg = e1_sum/truth_mat.shape[0]
-    g1_avg = g1_sum/truth_mat.shape[0]
-    e2_avg = e2_sum/truth_mat.shape[0]
+            e2_meter.update(e2)
     print(
-        f'Simple check pass!\nTask:{args.task}\tE1:{e1_avg}\tG1:{g1_avg}\tE2:{e2_avg}')
+        f'Simple check pass!\nTask:{args.task}\tE1:{e1_meter.avg}\tG1:{g1_meter.avg}\tE2:{e2_meter.avg}')
 
 
 if __name__ == '__main__':

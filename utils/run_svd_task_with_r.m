@@ -7,9 +7,8 @@ label_name=[arg_list{1},arg_list{3}];
 label=open(label_name);
 label=label.data;
 [batch,m,n]=size(A);
-u=zeros(batch,m,m);
-v=zeros(batch,n,n);
-s=zeros(batch,m,n);
+E1=zeros(1,batch);
+G1=zeros(1,batch);
 run_time=linspace(0,0,200);
 for i=1:200
     a=squeeze(A(i,:,:));
@@ -17,9 +16,9 @@ for i=1:200
     tic
     [u_t,s_t,v_t]=my_svd_1(a,l);
     run_time(i)=toc;
-    u(i,:,:)=u_t;
-    s(i,:,:)=s_t;
-    v(i,:,:)=v_t;
+    [e1,g1]=check_svd(a,u_t,s_t,v_t);
+    E1(i)=e1;
+    G1(i)=g1;
 end
 res_name=[arg_list{4},'res.mat'];
-save('-v6',res_name,'u','v','s','run_time');
+save('-v6',res_name,'E1','G1','run_time');
