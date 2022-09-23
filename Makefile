@@ -17,6 +17,13 @@ else
 	one-matrix-cmd=octave-cli --path code/ --path utils/ utils/one_matrix_test.m
 endif
 
+ifeq ($(wandb),offline)
+	wandb-option=--wandb offline
+endif
+
+measure-task1:transpose
+	$(docker-cmd) python utils/check.py --complete_check --input_path data/trans/task1/ --output_path res/ --task 1 $(matlab-option) $(wandb-option)
+
 complete-check:complete-check-task1 complete-check-task2 complete-check-task3 complete-check-task4
 
 complete-check-task1:transpose

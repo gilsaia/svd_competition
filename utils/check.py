@@ -1,6 +1,8 @@
 import argparse
 import os
+import shutil
 import numpy as np
+import wandb
 from scipy.io import loadmat
 
 from utils import AverageMeter
@@ -69,6 +71,7 @@ def get_args():
     parser.add_argument('--measure', action='store_true')
     parser.add_argument('--matlab', action='store_true')
     parser.add_argument('--task', type=int, choices=[1, 2, 3, 4], default=1)
+    parser.add_argument('--wandb_mode', type=str, default='online')
     return parser.parse_args()
 
 
@@ -76,11 +79,13 @@ def prepare_dir(args):
     index = 0
     run_name = f'{args.run_name}-{index}'
     run_path = f'{args.save_path}{run_name}'
+    code_sync_path = f'{args.save_path}{args.run_name}'
     while os.path.exists(run_path):
         index += 1
         run_name = f'{args.run_name}-{index}'
         run_path = f'{args.save_path}{run_name}'
     if args.measure:
+        shutil.copytree('code/', code_sync_path, dirs_exist_ok=True)
         os.makedirs(run_path)
     args.run_name = run_name
 
@@ -100,6 +105,8 @@ label_name_list = ['data_m_256_n_128_label_r.mat',
                    'data_m_512_n_256_label_r.mat',
                    'data_m_1024_n_512_label_r.mat']
 
+record_name_list = ['m_256_n_128', 'm_512_n_256', 'm_1024_n_512']
+
 DATA_LEN = 3
 
 
@@ -117,8 +124,129 @@ def get_run_cmd(args, data_name, label_name):
     return cmd
 
 
+RETRY_NUM = 3
+MATRIX_NUM = 200
+
+
 def measure(args):
-    raise NotImplementedError()
+    save_path = f'{args.save_path}{args.run_name}'
+    args.wandb_name = f'{args.run_name}-task{args.task}'
+
+    if args.task != 4:
+        summary_record_dict = {'e1': {}, 'g1': {}, 'time': {}}
+    else:
+        summary_record_dict = {'e2': {}, 'time': {}}
+    for (key, item) in summary_record_dict.items():
+        for val in record_name_list:
+            item[val] = []
+
+    for i in range(RETRY_NUM):
+        job_name = f'{args.wandb_name}-measure-{i}'
+        wandb.init(project=args.project_name,
+                   entity=args.entity_name, config=args, group=args.wandb_name, job_type='measure', name=job_name, dir=save_path, mode=args.wandb_mode)
+        if args.task != 4:
+            wandb_record_dict = {'e1': {}, 'g1': {}, 'time': {}}
+        else:
+            wandb_record_dict = {'e2': {}, 'time': {}}
+        for j in range(DATA_LEN):
+            data_name = data_name_list[j]
+            label_name = label_name_list[j]
+            input_name = f'{args.input_path}{data_name}'
+            output_name = f'{args.output_path}res.mat'
+            if not os.path.exists(input_name):
+                continue
+
+            record_name = record_name_list[j]
+            for (key, item) in wandb_record_dict.items():
+                item[record_name] = []
+
+            cmd = get_run_cmd(args, data_name, label_name)
+            print(f'Run Command:{cmd}')
+            os.system(cmd)
+            print('Run Command end!')
+            if not os.path.exists(output_name):
+                print('Not find target file\nCheck error')
+                return
+
+            e1_meter = AverageMeter()
+            e2_meter = AverageMeter()
+            g1_meter = AverageMeter()
+            time_meter = AverageMeter()
+            if args.task != 4:
+                truth_mat = loadmat(input_name)
+                truth_mat = truth_mat['data']
+                output_res = loadmat(output_name)
+                E1 = np.squeeze(output_res['E1'])
+                G1 = np.squeeze(output_res['G1'])
+                runtime = np.squeeze(output_res['run_time'])
+                e1_thd = e1_dict[args.task]
+                g1_thd = g1_dict[args.task]
+                for t in range(truth_mat.shape[0]):
+                    e1 = E1[t]
+                    g1 = G1[t]
+                    check = e1 < e1_thd and g1 < g1_thd
+                    if not check:
+                        print(
+                            f'Find result exceed threshold\nTask:{args.task}\tIndex:{t}\tE1:{e1}\tG1:{g1}\nCheck error')
+                        return
+                    e1_meter.update(e1)
+                    g1_meter.update(g1)
+                    time_meter.update(runtime[t])
+
+                    wandb_record_dict['e1'][record_name].append(e1)
+                    wandb_record_dict['g1'][record_name].append(g1)
+                    wandb_record_dict['time'][record_name].append(runtime[t])
+
+                summary_record_dict['e1'][record_name].append(e1_meter)
+                summary_record_dict['g1'][record_name].append(g1_meter)
+                summary_record_dict['time'][record_name].append(time_meter)
+            else:
+                truth_mat = loadmat(input_name)
+                truth_mat = truth_mat['data']
+                output_res = loadmat(output_name)
+                E2 = np.squeeze(output_res['E2'])
+                runtime = np.squeeze(output_res['run_time'])
+                e2_thd = e2_dict[args.task]
+                for t in range(truth_mat.shape[0]):
+                    e2 = E2[t]
+                    check = e2 < e2_thd
+                    if not check:
+                        print(
+                            f'Find result exceed threshold\nTask:{args.task}\tIndex:{t}\tE2:{e2}\nCheck error')
+                        return
+                    e2_meter.update(e2)
+                    time_meter.update(runtime[t])
+
+                    wandb_record_dict['e2'][record_name].append(e2)
+                    wandb_record_dict['time'][record_name].append(runtime[t])
+
+                summary_record_dict['e2'][record_name].append(e2_meter)
+                summary_record_dict['time'][record_name].append(time_meter)
+            print(
+                f'Complete check pass!\nTask:{args.task}\tData:{data_name}\tE1:{e1_meter.avg}\tG1:{g1_meter.avg}\tE2:{e2_meter.avg}\tRun time:{time_meter.avg}')
+
+        for j in range(MATRIX_NUM):
+            for (key, item) in wandb_record_dict.items():
+                for (subkey, logs) in item.items():
+                    wandb.log({f'{key}-{subkey}': logs[j]}, step=j)
+        wandb.finish()
+
+    wandb.init(project=args.project_name,
+               entity=args.entity_name, config=args, group=args.wandb_name, job_type='summary', name=args.wandb_name, dir=save_path, mode=args.wandb_mode)
+
+    for i in range(RETRY_NUM):
+        for (key, item) in summary_record_dict.items():
+            for (subkey, record) in item.items():
+                wandb.log({f'Summary-{key}-{subkey}': record[i].avg}, step=i)
+
+    for (key, item) in summary_record_dict.items():
+        for (subkey, record) in item.items():
+            sum = 0
+            for i in range(RETRY_NUM):
+                sum += record[i].avg
+            sum /= RETRY_NUM
+            wandb.run.summary[f'{key}-{subkey}'] = sum
+    wandb.finish()
 
 
 def complete_check(args):
@@ -149,17 +277,17 @@ def complete_check(args):
             runtime = np.squeeze(output_res['run_time'])
             e1_thd = e1_dict[args.task]
             g1_thd = g1_dict[args.task]
-            for i in range(truth_mat.shape[0]):
-                e1 = E1[i]
-                g1 = G1[i]
+            for j in range(truth_mat.shape[0]):
+                e1 = E1[j]
+                g1 = G1[j]
                 check = e1 < e1_thd and g1 < g1_thd
                 if not check:
                     print(
-                        f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE1:{e1}\tG1:{g1}\nCheck error')
+                        f'Find result exceed threshold\nTask:{args.task}\tIndex:{j}\tE1:{e1}\tG1:{g1}\nCheck error')
                     return
                 e1_meter.update(e1)
                 g1_meter.update(g1)
-                time_meter.update(runtime[i])
+                time_meter.update(runtime[j])
         else:
             truth_mat = loadmat(input_name)
             truth_mat = truth_mat['data']
@@ -167,15 +295,15 @@ def complete_check(args):
             E2 = np.squeeze(output_res['E2'])
             runtime = np.squeeze(output_res['run_time'])
             e2_thd = e2_dict[args.task]
-            for i in range(truth_mat.shape[0]):
-                e2 = E2[i]
+            for j in range(truth_mat.shape[0]):
+                e2 = E2[j]
                 check = e2 < e2_thd
                 if not check:
                     print(
-                        f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE2:{e2}\nCheck error')
+                        f'Find result exceed threshold\nTask:{args.task}\tIndex:{j}\tE2:{e2}\nCheck error')
                     return
                 e2_meter.update(e2)
-                time_meter.update(runtime[i])
+                time_meter.update(runtime[j])
         print(
             f'Complete check pass!\nTask:{args.task}\tData:{data_name}\tE1:{e1_meter.avg}\tG1:{g1_meter.avg}\tE2:{e2_meter.avg}\tRun time:{time_meter.avg}')
 

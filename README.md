@@ -15,7 +15,7 @@ make build-docker # 构建容器 正常无变动的情况下只需要运行一�
 make one-matrix-task1 # 简单测试第一个任务 只运行一个矩阵 不查询正确性 不运行python脚本 检查是否有编程错误
 make simple-check # 简单测试 每个任务只使用最小的矩阵测试是否满足要求
 make complete-check # 完整测试 每个任务测试所有矩阵是否满足要求
-make measure # 尚未实现！！ 测速测试 预期会每个任务每个矩阵重复跑约200-1000次 计算平均时间
+make measure # 测速测试 预期会每个任务每个矩阵重复跑3次 计算平均时间
 ```
 ## 脚本对应关系
 ### task1
