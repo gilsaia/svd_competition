@@ -14,7 +14,7 @@
 make build-docker # 构建容器 正常无变动的情况下只需要运行一次
 make one-matrix-task1 # 简单测试第一个任务 只运行一个矩阵 不查询正确性 不运行python脚本 检查是否有编程错误
 make simple-check # 简单测试 每个任务只使用最小的矩阵测试是否满足要求
-make complete-check # 尚未实现！！ 完整测试 每个任务测试所有矩阵是否满足要求
+make complete-check # 完整测试 每个任务测试所有矩阵是否满足要求
 make measure # 尚未实现！！ 测速测试 预期会每个任务每个矩阵重复跑约200-1000次 计算平均时间
 ```
 ## 脚本对应关系
@@ -45,6 +45,12 @@ make measure # 尚未实现！！ 测速测试 预期会每个任务每个矩阵
 **实际并不需要 没有必须的场景没必要运行** 
 
 通过python库生成正确的结果并存储下来 后来发现测试其实不需要这部分结果
+### complete-check
+分别运行每个任务的complete-check
+### complete-check-task1/2/3/4
+每个任务查看是否生成了transpose数据 没有则自动生成
+
+之后会对对应的任务运行对应的脚本获取测试结果 显示误差和运行时间的平均值
 ### simple-check
 会分别运行每个任务的simple-check
 ### simple-check-task1/2/3/4
