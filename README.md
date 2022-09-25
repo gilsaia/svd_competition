@@ -4,6 +4,7 @@
 - 安装make（linux自带，mac应该可以通过homebrew安装）
 - 创建data文件夹 将每个task数据分别放到data下（即格式为data/task1/data.mat,data/task2/data.mat...,不需要改名)
 - 本地的python环境安装wandb包（线上看板包，用于后面传输测速结果）
+- 将`.env.example`复制为`.env`文件
 ## 自定义环境变量
 项目提供了`.env.example` 提供一些个人环境的配置项 需要使用的话**将其复制为`.env`才会生效** Makefile在运行时会自动读取
 - `local` 为`on`时表示测试不在docker环境下运行 会直接运行对应的python文件/octave/matlab脚本
