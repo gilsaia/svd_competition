@@ -72,10 +72,14 @@ def get_args():
     parser.add_argument('--matlab', action='store_true')
     parser.add_argument('--task', type=int, choices=[1, 2, 3, 4], default=1)
     parser.add_argument('--wandb_mode', type=str, default='online')
+    parser.add_argument('--data_len', type=int, default=3, choices=[1, 2, 3])
     return parser.parse_args()
 
 
-def prepare_dir(args):
+DATA_LEN = 0  # don't change here, change args.data_len
+
+
+def prepare(args):
     index = 0
     run_name = f'{args.run_name}-{index}'
     run_path = f'{args.save_path}{run_name}'
@@ -88,6 +92,8 @@ def prepare_dir(args):
         shutil.copytree('code/', code_sync_path, dirs_exist_ok=True)
         os.makedirs(run_path)
     args.run_name = run_name
+    global DATA_LEN
+    DATA_LEN = args.data_len
 
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
@@ -106,8 +112,6 @@ label_name_list = ['data_m_256_n_128_label_r.mat',
                    'data_m_1024_n_512_label_r.mat']
 
 record_name_list = ['m_256_n_128', 'm_512_n_256', 'm_1024_n_512']
-
-DATA_LEN = 3
 
 
 def get_run_cmd(args, data_name, label_name):
@@ -137,8 +141,9 @@ def measure(args):
     else:
         summary_record_dict = {'e2': {}, 'time': {}}
     for (key, item) in summary_record_dict.items():
-        for val in record_name_list:
-            item[val] = []
+        for j in range(DATA_LEN):
+            record = record_name_list[j]
+            item[record] = []
 
     for i in range(RETRY_NUM):
         job_name = f'{args.wandb_name}-measure-{i}'
@@ -361,7 +366,7 @@ def simple_check(args):
 
 if __name__ == '__main__':
     args = get_args()
-    prepare_dir(args)
+    prepare(args)
     if args.measure:
         measure(args)
     elif args.complete_check:
