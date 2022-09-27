@@ -6,15 +6,20 @@ function [U,B,V] = bidiagnoal(A)
     for i=1:n-1
         Q=findQ(B,i,m);
         B=Q*B;
-        U=U*Q;
+        U=U*Q';
         % B=matmul(Q,B);
         % U=matmul(U,Q);
         P=findP(B,i,n);
         B=B*P;
-        V=P*V;
+        V=P'*V;
         % B=matmul(B,P);
         % V=matmul(P,V);
     end
+    Q=findQ(B,n,m);
+    B=Q*B;
+    U=U*Q';
+    % B=matmul(Q,B);
+    % U=matmul(U,Q);
 end
 
 function [Q] = findQ(B,k,m)

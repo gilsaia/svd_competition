@@ -1,6 +1,6 @@
 function [U,B,V] = checkbid(A)
     [U,B,V]=bidiagnoal(A);
-    AT=U*B*V';
+    AT=U*B*V;
     remain=A-AT;
     check=norm(remain,'fro');
     disp(sprintf('norm:%f',check));
