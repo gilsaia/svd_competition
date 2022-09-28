@@ -27,7 +27,7 @@ function [U,B,V] = checkbid(A)
     end
     for i=n+1:m
         allsum=sum(B(i,1:n));
-        disp(sprintf('index:%d,allsum:%f',n,allsum));
+        disp(sprintf('index:%d,allsum:%f',i,allsum));
         if allsum>1e-5
             disp('Sum Wrong!');
             return
