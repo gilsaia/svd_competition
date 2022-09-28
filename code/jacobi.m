@@ -3,8 +3,9 @@ function [U,S,V]=jacobi_svd(A)
     % A is original matrix
     % Singular values come back in S (diag matrix)
     % orig matrix = U*S*V’
-    %
     % One-sided Jacobi algorithm for SVD
+
+    % !!todo: check the dim of U
 
     TOL=1.e-8;
     MAX_STEPS=40;
@@ -13,7 +14,7 @@ function [U,S,V]=jacobi_svd(A)
     V=eye(n);
     for steps=1:MAX_STEPS
         converge=0;
-        s = col_square_sum(U)
+        s = col_square_sum(U, n)
         for j=2:n
             for k=1:j-1
                 alpha=s(k)
@@ -32,13 +33,15 @@ function [U,S,V]=jacobi_svd(A)
                 c=1/sqrt(1+t^2)
                 s=c*t
                 % update columns k and j of U
-                t=U(:,k);
-                U(:,k)=c*t-s*U(:,j);
-                U(:,j)=s*t+c*U(:,j);
+                for i=1:n
+                    U(i,k)=c*U(i,k)-s*U(i,j);
+                    U(i,j)=s*U(i,k)+c*U(i,j);
+                end
                 % update matrix V of right singular vectors
-                t=V(:,k);
-                V(:,k)=c*t-s*V(:,j);
-                V(:,j)=s*t+c*V(:,j);
+                for i=1:n
+                    V(i,k)=c*V(i,k)-s*V(i,j);
+                    V(i,j)=s*V(i,k)+c*V(i,j);
+                end
             end
         end
         if converge < TOL
@@ -52,20 +55,17 @@ function [U,S,V]=jacobi_svd(A)
     % the singular values are the norms of the columns of U
     % the left singular vectors are the normalized columns of U
     for j=1:n
-        singvals(j)=norm(U(:,j));
-        U(:,j)=U(:,j)/singvals(j);
+        singvals(j)=norm(U(:,j),'fro');
+        for i=1:n
+            U(i,j)=U(i,j)/singvals(j);
+        end
     end
     S=diag(singvals);
 
-function s = col_square_sum(U)
-    [n,m] = size(U);
-    s = zeros(m,1);
-    for i = 1:m
-        sum = 0;
-        for j = 1:n
-            sum = sum + U(j,i)^2;
-        end
-        s(i) = sum;
+function s = col_square_sum(U, n)
+    s = zeros(n,1);
+    for i = 1:n
+        s(i) = norm(U(:,i), 'fro')^2
     end
 
 
