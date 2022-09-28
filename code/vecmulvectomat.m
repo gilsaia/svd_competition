@@ -1,9 +1,10 @@
-function [S] = vecmulvectomat(x)
+function [S] = vecmulvectomat(x,y)
     [m,n]=size(x);
-    S=zeros(m);
+    [t,z]=size(y);
+    S=zeros(m,z);
     for i=1:m
-        for j=1:m
-            S(i,j)=x(i)*x(j);
+        for j=1:z
+            S(i,j)=x(i)*y(j);
         end
     end 
 end
