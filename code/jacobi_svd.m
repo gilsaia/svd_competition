@@ -9,19 +9,19 @@ function [U,S,V]=jacobi_svd(A)
 
     TOL=1.e-8;
     MAX_STEPS=40;
-    n=size(A,1);
+    n=size(A,2);
     U=A;
     V=eye(n);
     for steps=1:MAX_STEPS
         converge=0;
-        s = col_square_sum(U, n)
+        s = col_square_sum(U, n);
         for j=2:n
             for k=1:j-1
-                alpha=s(k)
-                beta=s(j)
-                gamma=0
+                alpha=s(k);
+                beta=s(j);
+                gamma=0;
                 for i=1:n
-                    gamma=gamma+U(i,k)*U(i,j)
+                    gamma=gamma+U(i,k)*U(i,j);
                 end
                 converge=max(converge,abs(gamma)/sqrt(alpha*beta));
                 if gamma ~= 0
@@ -30,27 +30,28 @@ function [U,S,V]=jacobi_svd(A)
                 else
                     t=0;
                 end
-                c=1/sqrt(1+t^2)
-                s=c*t
+                c=1/sqrt(1+t^2);
+                st=c*t;
                 % update columns k and j of U
                 for i=1:n
-                    U(i,k)=c*U(i,k)-s*U(i,j);
-                    U(i,j)=s*U(i,k)+c*U(i,j);
+                    U(i,k)=c*U(i,k)-st*U(i,j);
+                    U(i,j)=st*U(i,k)+c*U(i,j);
                 end
                 % update matrix V of right singular vectors
                 for i=1:n
-                    V(i,k)=c*V(i,k)-s*V(i,j);
-                    V(i,j)=s*V(i,k)+c*V(i,j);
+                    V(i,k)=c*V(i,k)-st*V(i,j);
+                    V(i,j)=st*V(i,k)+c*V(i,j);
                 end
             end
         end
+        disp(sprintf('Step:%d Coverge:%f',steps,converge));
         if converge < TOL
             break;
         end
     end
 
     if steps >= MAX_STEPS
-        error(’jacobi_svd failed to converge!’);
+        error('jacobi_svd failed to converge!');
     end
     % the singular values are the norms of the columns of U
     % the left singular vectors are the normalized columns of U
@@ -65,7 +66,7 @@ function [U,S,V]=jacobi_svd(A)
 function s = col_square_sum(U, n)
     s = zeros(n,1);
     for i = 1:n
-        s(i) = norm(U(:,i), 'fro')^2
+        s(i) = norm(U(:,i), 'fro')^2;
     end
 
 
