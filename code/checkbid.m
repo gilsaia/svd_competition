@@ -18,5 +18,19 @@ function [U,B,V] = checkbid(A)
             return
         end
     end
+    elesum=B(n,n);
+    allsum=sum(B(n,1:n));
+    disp(sprintf('index:%d,twoelesum:%f allsum:%f',n,elesum,allsum));
+    if (allsum-elesum)>1e-5
+        disp('Sum Wrong!');
+        return
+    end
+    for i=n+1:m
+        allsum=sum(B(i,1:n));
+        disp(sprintf('index:%d,allsum:%f',n,allsum));
+        if allsum>1e-5
+            disp('Sum Wrong!');
+            return
+        end        
     disp('Bidiagnoal Pass!');
 end
