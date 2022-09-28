@@ -1,5 +1,5 @@
-function [U,B,V] = checkbid(A)
-    [U,B,V]=bidiagnoal(A);
+function [U,B,V] = checkbid(A,r)
+    [U,B,V]=bidiagnoal_r(A,r);
     AT=U*B*V;
     remain=A-AT;
     check=norm(remain,'fro');

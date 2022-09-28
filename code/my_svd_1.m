@@ -1,6 +1,6 @@
 function [u,s,v]=my_svd_1(A,r)
 
-    [U,B,V]=checkbid(A);
+    [U,B,V]=checkbid(A,r);
     
     [u,s,v]=svd(A);
 
