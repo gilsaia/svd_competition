@@ -111,6 +111,7 @@ while rots >= 1
             end
         end
     end
+    disp(sprintf('Step:%d rots:%d', i,rots));
 end
 
 % Post-processing
