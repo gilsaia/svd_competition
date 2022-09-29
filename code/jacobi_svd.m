@@ -44,7 +44,19 @@ function [U,S,V]=jacobi_svd(A)
                 end
             end
         end
-        disp(sprintf('Step:%d Coverge:%f',steps,converge));
+        % the singular values are the norms of the columns of U
+        % the left singular vectors are the normalized columns of U
+        UT=U;
+        for j=1:n
+            singvals(j)=norm(U(:,j),'fro');
+            for i=1:n
+                UT(i,j)=UT(i,j)/singvals(j);
+            end
+        end
+        S=diag(singvals);
+        AT=UT*S*V;
+        Remain=A-AT;
+        disp(sprintf('Step:%d Coverge:%f,Norm:%f',steps,converge,norm(Remain,'fro')/norm(A,'fro')));
         if converge < TOL
             break;
         end
