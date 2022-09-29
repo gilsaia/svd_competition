@@ -5,22 +5,21 @@ function [U,S,V]=jacobi_svd(A)
     % orig matrix = U*S*V’
     % One-sided Jacobi algorithm for SVD
 
-    % !!todo: check the dim of U
 
     TOL=1.e-8;
     MAX_STEPS=40;
-    n=size(A,2);
+    [m,n]=size(A);
     U=A;
     V=eye(n);
     for steps=1:MAX_STEPS
         converge=0;
-        s = col_square_sum(U, n);
+        s = col_square_sum(U,n);
         for j=2:n
             for k=1:j-1
                 alpha=s(k);
                 beta=s(j);
                 gamma=0;
-                for i=1:n
+                for i=1:m
                     gamma=gamma+U(i,k)*U(i,j);
                 end
                 converge=max(converge,abs(gamma)/sqrt(alpha*beta));
@@ -33,7 +32,7 @@ function [U,S,V]=jacobi_svd(A)
                 c=1/sqrt(1+t^2);
                 st=c*t;
                 % update columns k and j of U
-                for i=1:n
+                for i=1:m
                     U(i,k)=c*U(i,k)-st*U(i,j);
                     U(i,j)=st*U(i,k)+c*U(i,j);
                 end
@@ -57,7 +56,7 @@ function [U,S,V]=jacobi_svd(A)
     % the left singular vectors are the normalized columns of U
     for j=1:n
         singvals(j)=norm(U(:,j),'fro');
-        for i=1:n
+        for i=1:m
             U(i,j)=U(i,j)/singvals(j);
         end
     end
