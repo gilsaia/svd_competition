@@ -22,13 +22,11 @@ function [U,S,V] = bidiagnoal_svd(B)
         upper=bmax/2;
         lower=min(mumin*n^(1/2),mumin*n^-(1/2));
         if n*lower/upper<max(theta/tol,1e-2)
-            [Ut,Bt,Vt]=implicitQR(Bt);
+            [U,Bt,V]=implicitQR(Bt,U,V);
         else
-            [Ut,Bt,Vt]=implicitQR(Bt);
+            [U,Bt,V]=implicitQR(Bt,U,V);
         end
         B(s:e,s:e)=Bt;
-        U(s:e,s:e)=U(s:e,s:e)*Ut;
-        V(s:e,s:e)=V(s:e,s:e)*Vt;
     end
     S=B;
 end
@@ -77,12 +75,10 @@ function [cs,sn,r] = ROT(f,g)
     end
 end
 
-function [U,B,V] = implicitQR(B)
+function [U,B,V] = implicitQR(B,U,V)
     [n,n]=size(B);
     oldcs=1;
     oldsn=0;
-    U=eye(n);
-    V=eye(n);
     f=B(1,1);
     g=B(1,2);
     for i=1:n-1
