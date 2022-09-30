@@ -33,15 +33,19 @@ function [U,S,V]=jacobi_svd(A)
                 c=1/sqrt(1+t^2);
                 st=c*t;
                 % update columns k and j of U
+                Ut=U(i,:);
                 for i=1:n
-                    U(i,k)=c*U(i,k)-st*U(i,j);
-                    U(i,j)=st*U(i,k)+c*U(i,j);
+                    Ut(k)=c*U(i,k)-st*U(i,j);
+                    Ut(j)=st*U(i,k)+c*U(i,j);
                 end
+                U(i,:)=Ut;
                 % update matrix V of right singular vectors
+                Vt=V(i,:);
                 for i=1:n
-                    V(i,k)=c*V(i,k)-st*V(i,j);
-                    V(i,j)=st*V(i,k)+c*V(i,j);
+                    Vt(k)=c*V(i,k)-st*V(i,j);
+                    Vt(j)=st*V(i,k)+c*V(i,j);
                 end
+                V(i,:)=Vt;
             end
         end
         % the singular values are the norms of the columns of U
