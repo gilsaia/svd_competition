@@ -1,7 +1,7 @@
 function [U,S,V] = bidiagnoal_svd(B)
     [n,n]=size(B);
     theta=1e-16;
-    tol=1e-8;
+    tol=1e-14;
     U=eye(n);
     V=eye(n);
     while 1
@@ -39,6 +39,7 @@ function [Bt,mumin] = stop_criterion(Bt,tol)
     for j=1:n-1
         if abs(Bt(j,j+1))<mu(j)*tol
             Bt(j,j+1)=0;
+            return
         end
         mu(j+1)=abs(Bt(j+1,j+1))*mu(j)/(mu(j)+abs(Bt(j,j+1)));
         mumin=min(mumin,mu(j+1));
@@ -78,7 +79,7 @@ end
 function [U,B,V] = implicitQR(B,U,V)
     [n,n]=size(B);
     oldcs=1;
-    oldsn=0;
+    % oldsn=0;
     f=B(1,1);
     g=B(1,2);
     for i=1:n-1
