@@ -193,7 +193,6 @@ def measure(args):
                     if not check:
                         print(
                             f'Find result exceed threshold\nTask:{args.task}\tIndex:{t}\tE1:{e1}\tG1:{g1}\nCheck error')
-                        return
                     e1_meter.update(e1)
                     g1_meter.update(g1)
                     time_meter.update(runtime[t])
@@ -218,7 +217,6 @@ def measure(args):
                     if not check:
                         print(
                             f'Find result exceed threshold\nTask:{args.task}\tIndex:{t}\tE2:{e2}\nCheck error')
-                        return
                     e2_meter.update(e2)
                     time_meter.update(runtime[t])
 
@@ -289,7 +287,6 @@ def complete_check(args):
                 if not check:
                     print(
                         f'Find result exceed threshold\nTask:{args.task}\tIndex:{j}\tE1:{e1}\tG1:{g1}\nCheck error')
-                    return
                 e1_meter.update(e1)
                 g1_meter.update(g1)
                 time_meter.update(runtime[j])
@@ -306,7 +303,6 @@ def complete_check(args):
                 if not check:
                     print(
                         f'Find result exceed threshold\nTask:{args.task}\tIndex:{j}\tE2:{e2}\nCheck error')
-                    return
                 e2_meter.update(e2)
                 time_meter.update(runtime[j])
         print(
@@ -343,7 +339,6 @@ def simple_check(args):
             if not check:
                 print(
                     f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE1:{e1}\tG1:{g1}\nCheck error')
-                return
             e1_meter.update(e1)
             g1_meter.update(g1)
     else:
@@ -358,7 +353,6 @@ def simple_check(args):
             if not check:
                 print(
                     f'Find result exceed threshold\nTask:{args.task}\tIndex:{i}\tE2:{e2}\nCheck error')
-                return
             e2_meter.update(e2)
     print(
         f'Simple check pass!\nTask:{args.task}\tE1:{e1_meter.avg}\tG1:{g1_meter.avg}\tE2:{e2_meter.avg}')
