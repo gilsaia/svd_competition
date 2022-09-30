@@ -6,11 +6,11 @@ function [U,S,V] = bidiagnoal_svd(B)
     V=eye(n);
     while 1
         s=1;
-        e=n-1;
+        e=n;
         while abs(B(s,s+1))<1e-8
             s+=1;
         end
-        while abs(B(e,e+1))<1e-8
+        while abs(B(e-1,e))<1e-8
             e-=1;
         end
         if s>=e
