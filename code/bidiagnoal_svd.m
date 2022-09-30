@@ -7,10 +7,10 @@ function [U,S,V] = bidiagnoal_svd(B)
     while 1
         s=1;
         e=n;
-        while abs(B(s,s+1))<1e-8
+        while s<n&&abs(B(s,s+1))<1e-8
             s+=1;
         end
-        while abs(B(e-1,e))<1e-8
+        while e>1&&abs(B(e-1,e))<1e-8
             e-=1;
         end
         if s>=e
@@ -28,7 +28,7 @@ function [U,S,V] = bidiagnoal_svd(B)
         end
         B(s:e,s:e)=Bt;
         U(s:e,s:e)=U(s:e,s:e)*Ut;
-        V(s:e,s:e)=Vt*V(s:e,s:e);
+        V(s:e,s:e)=V(s:e,s:e)*Vt;
     end
     S=B;
 end
