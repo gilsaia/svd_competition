@@ -11,10 +11,10 @@ function [U,S,V] = gr_svd(B)
         end
         e=n;
         s=1;
-        while e>0 && B(e-1,e)==0
+        while e>0 && abs(B(e-1,e))<1e-8
             e-=1;
         end
-        while s<n && B(s,s+1)==0
+        while s<n && abs(B(s,s+1))<1e-8
             s+=1;
         end
         if s>=e
@@ -31,6 +31,7 @@ function [U,S,V] = gr_svd(B)
         if flag==0
             [B,U,V]=gr_step(B,U,V,s,e);
         end
+        disp(sprintf('Now e:%d,s:%d', e,s));
     end
     S=B;
 end
