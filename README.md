@@ -93,6 +93,7 @@ make measure # 测速测试 预期会每个任务每个矩阵重复跑3次 计�
 复数域优化**TODO**
 
 实数域优化**TODO**
+- 尝试输出实数双对角阵
 - 加standard QR
 - 优化lower和upper
 - 调超参
