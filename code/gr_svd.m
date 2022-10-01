@@ -1,6 +1,8 @@
 function [U,S,V] = gr_svd(B)
     [n,n]=size(B);
-    sigma=1e-14
+    sigma=1e-14;
+    U=eye(n);
+    V=eye(n);
     while 1
         for i=1:n-1
             if abs(B(i,i+1))<=sigma*(abs(B(i,i))+abs(B(i+1,i+1)))
@@ -8,7 +10,7 @@ function [U,S,V] = gr_svd(B)
             end
         end
         e=n;
-        s=0;
+        s=1;
         while e>0 && B(e-1,e)==0
             e-=1;
         end
@@ -33,6 +35,16 @@ function [U,S,V] = gr_svd(B)
     S=B;
 end
 
+function [T1,T2] = gr_update(B1,B2,c,s)
+    [n,_]=size(B1);
+    T1=zeros(n,1);
+    T2=zeros(n,1);
+    for i=1:n
+        T1(i)=c*B1(i)+s*B2(i);
+        T2(i)=-s*B1(i)+c*B2(i);
+    end
+end
+
 function [B,Q,P] = gr_step(B,Q,P,s,e)
     a=B(e-1,e-1);
     b=B(e-1,e);
@@ -54,15 +66,19 @@ function [B,Q,P] = gr_step(B,Q,P,s,e)
         tmpsum=sqrt(y^2+sigma^2);
         c=y/tmpsum;
         s=-sigma/tmpsum;
-        B=B;
-        P=P;
+        [B(:,k),B(:,k+1)]=gr_update(B(:,k),B(:,k+1),c,s);
+        [P(:,k),P(:,k+1)]=gr_update(P(:,k),P(:,k+1),c,s);
         y=B(k,k);
         sigma=B(k+1,k);
         tmpsum=sqrt(y^2+sigma^2);
         c=y/tmpsum;
         s=-sigma/tmpsum;
-        B=B;
-        Q=Q;
+        [b1,b2]=gr_update(B(k,:).',B(k+1,:).',c,-s);
+        B(k,:)=b1.';
+        B(k+1,:)=b2.';
+        [q1,q2]=gr_update(Q(k,:).',Q(k+1,:).',c,s);
+        Q(k,:)=q1.';
+        Q(k+1,:)=q2.';
         if k<e-1
             y=B(k,k+1);
             sigma=B(k,k+2);
