@@ -43,8 +43,8 @@ function [sigma,w] = householderp(x,len_x)
     k = (abs(real(x(1)))+x_norm) / x_norm;
     xt=x;
     xt(1)+=niu;
-    w = xt * sqrt(k) / (x(1)+niu);
-    sigma = (x(1)+niu) / (niu*k);
+    w = xt;
+    sigma = k / ((niu*k)*(x(1)+niu));
 end
 
 function [delta] = householder(x, len_x)
@@ -63,8 +63,8 @@ function [sigma,w] = householderq(x,len_x)
     niu = sign(real(x(1))) * x_norm;
     xt=x;
     xt(1)+=niu;
-    w = xt / (x(1)+niu);
-    sigma = (x(1)+niu) / niu;
+    w = xt;
+    sigma = 1 / (niu*(x(1)+niu));
 end
 
 function [delta] = householder2(x, len_x)

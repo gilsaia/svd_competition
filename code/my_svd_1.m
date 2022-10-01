@@ -1,7 +1,7 @@
 function [u,s,v]=my_svd_1(A,r)
     
     tic;
-    [U,B,V]=bidiagnoal_r(A,r);
+    [U,B,V]=bidiagonal_new(A,r);
     bitime=toc;
     [m,n]=size(B);
     Bo=B(1:n,:);
