@@ -23,7 +23,7 @@ function [U,S,V] = gr_svd(B)
         flag=0;
         e=e-1;
         for i=s:e
-            if B(i,i)==0
+            if abs(B(i,i))<1e-8
                 B(i,i+1)=0;
                 flag=1;
             end
