@@ -19,7 +19,7 @@ function [U,B,V] = bidiagonal_new(A,r)
         % U(:,j:end)=U(:,j:end)-vecmulvectomat(ut,wt');
 
         if j <= n-1
-            [sigma,w] = householderp(B(j,j+1:end)',n-j);
+            [sigma,w] = householderq(B(j,j+1:end)',n-j);
 
             wt=sigma*w;
             bt=B(j:end,j+1:end)*wt;
@@ -44,7 +44,7 @@ function [sigma,w] = householderp(x,len_x)
     xt=x;
     xt(1)+=niu;
     w = xt;
-    sigma = k / ((niu*k)*(x(1)+niu));
+    sigma = k / (niu*k*(x(1)+niu)');
 end
 
 function [delta] = householder(x, len_x)
@@ -64,7 +64,7 @@ function [sigma,w] = householderq(x,len_x)
     xt=x;
     xt(1)+=niu;
     w = xt;
-    sigma = 1 / (niu*(x(1)+niu));
+    sigma = 1 / (niu*(x(1)+niu)');
 end
 
 function [delta] = householder2(x, len_x)
