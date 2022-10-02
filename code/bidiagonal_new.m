@@ -1,25 +1,24 @@
-function [U,B,V] = bidiagnoal_new(A,r)
+function [U,B,V] = bidiagonal_new(A,r)
     [m,n]=size(A);
     B=A;
     U=eye(m);
     V=eye(n);
-    for j=1:n-1
-        disp(sprintf('iter:%f',j));
+    for j=1:n
         delta = householder2(B(j:end,j),m-j+1);        
         B(j:end,j:end) = B(j:end,j:end) - delta' * B(j:end,j:end);
         Q = eye(m);
         Q(j:end,j:end) = Q(j:end,j:end) - delta';
         U = matmul(U,Q);
 
-        if j <= n-2
-            delta = householder(B(j,j+1:end)',n-j);
+        if j <= n-1
+            delta = householder2(B(j,j+1:end)',n-j);
             B(j:end,j+1:end) = B(j:end,j+1:end) - B(j:end,j+1:end) * delta;
             P = eye(n);
             P(j+1:end,j+1:end) = P(j+1:end,j+1:end) - delta;
             V = matmul(P,V);
         end
     end
-
+    B = real(B);
 end
 
 function [delta] = householder(x, len_x)
