@@ -1,10 +1,10 @@
-function [U,B,V,d,e] = bidiagonal(A,m,n)
+function [U,B,V,d,e] = bidiagonal_r(A,r,m,n)
     B=zeros(m,n);
     d=zeros(n,1);
     e=zeros(n-1,1);
     U=eye(m);
     V=eye(n);
-    for j=1:n
+    for j=1:r
         [alpha,tau,v]=householder_lapack(A(j:end,j),m-j+1);
         d(j)=real(alpha); 
 

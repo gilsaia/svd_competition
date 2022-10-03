@@ -1,18 +1,20 @@
-function [U,S,V] = bidiagnoal_svd(B)
+function [U,S,V] = dk_svd(B,U,V,n)
     % B=U*S*V'
-    [n,n]=size(B);
+    % input param is U from bid with size(m,m) cut to size(m,n)
     theta=1e-16;
     tol=1e-14;
-    U=eye(n);
-    V=eye(n);
+    upperd=n;
+    lowerd=1;
     while 1
-        s=1;
-        e=n;
+        s=lowerd;
+        e=upperd;
         while s<n&&abs(B(s,s+1))<1e-8
             s+=1;
+            lowerd+=1;
         end
         while e>1&&abs(B(e-1,e))<1e-8
             e-=1;
+            upperd-=1;
         end
         if s>=e
             break
@@ -68,18 +70,37 @@ function [cs,sn,r] = rot(f,g)
     end
 end
 
+% % B*[c -s;s c]
+% function [b] = updateBleft(b,c,s)
+%     x=b(1,1);
+%     y=b(1,2);
+%     w=b(2,1);
+%     z=b(2,2);
+%     b(1,1)=c*x+s*y;
+%     b(1,2)=-s*x+c*y;
+%     b(2,1)=c*w+s*z;
+%     b(2,2)=-s*w+c*z;
+% end
+
+% % [c s;-s c]*B
+% function [b] = updateBright(b,c,s)
+%     x=b(1,1);
+%     y=b(1,2);
+%     w=b(2,1);
+%     z=b(2,2);
+%     b(1,1)=c*x+s*w;
+%     b(1,2)=c*y+s*z;
+%     b(2,1)=-s*x+c*w;
+%     b(2,2)=-s*y+c*z;
+% end
 
 function [U,B,V] = implicitQR(B,U,V,st)
     n=size(B,1);
     for i=1:n-1
         [c s r]=rot(B(i,i),B(i,i+1));
-        Q=eye(n);
-        Q(i:i+1,i:i+1)=[c s;-s c];
         B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
         V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
         [c s r]=rot(B(i,i),B(i+1,i));
-        Q=eye(n);
-        Q(i:i+1,i:i+1)=[c s;-s c];
         B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
         U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
     end
@@ -97,15 +118,11 @@ function [U,B,V] = standardQR(B,U,V,st)
     z=B(1,1)*B(1,2);
     for i=1:n-1
         [c s r]=rot(x,z);
-        Q=eye(n);
-        Q(i:i+1,i:i+1)=[c s;-s c];
         B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
         V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
         x=B(i,i);
         z=B(i+1,i);
         [c s r]=rot(x,z);
-        Q=eye(n);
-        Q(i:i+1,i:i+1)=[c s;-s c];
         B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
         U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
         if i<n-1
