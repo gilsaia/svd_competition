@@ -94,9 +94,8 @@ make measure # 测速测试 预期会每个任务每个矩阵重复跑3次 计�
 
 【TODO】检查代码逻辑，和原文核对，检查输出的转置问题
 
-【DOING】复数域优化
-- 【DONE】输出实数双对角矩阵
-- 【DONE】检查实数双对角矩阵逻辑，看lapack代码or论文or其他代码
+【DONE】复数域优化
+- 输出实数双对角矩阵，检查实数双对角矩阵逻辑，看lapack代码or论文or其他代码
 
 【TODO】实数域优化
 - 【DONE】加standard QR
