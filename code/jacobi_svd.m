@@ -1,11 +1,10 @@
 function [U,S,V]=jacobi_svd(A)
     % [U S V]=jacobi_svd(A)
-    % A is original matrix
+    % A is bidiagonal matrix
     % Singular values come back in S (diag matrix)
-    % orig matrix = U*S*V’
+    % orig matrix = U*S*V'
     % One-sided Jacobi algorithm for SVD
 
-    % !!todo: check the dim of U
 
     TOL=1.e-8;
     MAX_STEPS=40;
@@ -34,13 +33,15 @@ function [U,S,V]=jacobi_svd(A)
                 st=c*t;
                 % update columns k and j of U
                 for i=1:n
+                    tmp=U(i,k);
                     U(i,k)=c*U(i,k)-st*U(i,j);
-                    U(i,j)=st*U(i,k)+c*U(i,j);
+                    U(i,j)=st*tmp+c*U(i,j);
                 end
                 % update matrix V of right singular vectors
                 for i=1:n
+                    tmp=V(i,k);
                     V(i,k)=c*V(i,k)-st*V(i,j);
-                    V(i,j)=st*V(i,k)+c*V(i,j);
+                    V(i,j)=st*tmp+c*V(i,j);
                 end
             end
         end
@@ -54,7 +55,7 @@ function [U,S,V]=jacobi_svd(A)
             end
         end
         S=diag(singvals);
-        AT=UT*S*V;
+        AT=UT*S*V';
         Remain=A-AT;
         disp(sprintf('Step:%d Coverge:%f,Norm:%f',steps,converge,norm(Remain,'fro')/norm(A,'fro')));
         if converge < TOL
