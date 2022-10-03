@@ -95,20 +95,17 @@ make measure # 测速测试 预期会每个任务每个矩阵重复跑3次 计�
 【TODO】检查代码逻辑，和原文核对，检查输出的转置问题
 
 【DOING】复数域优化
-- 【DOING】输出实数双对角矩阵
-- 【DOING】检查实数双对角矩阵逻辑，看lapack代码or论文or其他代码
+- 【DONE】输出实数双对角矩阵
+- 【DONE】检查实数双对角矩阵逻辑，看lapack代码or论文or其他代码
 
 【TODO】实数域优化
-- 加standard QR
+- 【DONE】加standard QR
 - 优化lower和upper
 - 调超参
 
 ### GR算法
 【DOING】基本代码跑通
 
-优化思路
-- B存成向量计算
-- 调超参
 ### 如何利用秩
 给定r，将方程组的后n-r个解置为0
 ### 如何利用奇异值分段和的比(task3)
