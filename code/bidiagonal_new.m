@@ -9,7 +9,7 @@ function [U,B,V] = bidiagonal_new(A,r)
         [alpha,tau,v]=householder_lapack(A(j:end,j),m-j+1);
         d(j)=real(alpha); 
         Q = eye(m);
-        Q(j:end,j:end) = Q(j:end,j:end) - tau*v*v';
+        Q(j:end,j:end) = Q(j:end,j:end)-tau*v*v';
         U=U*Q;
         A=Q'*A;
 
@@ -22,7 +22,7 @@ function [U,B,V] = bidiagonal_new(A,r)
             A=A*P;
         end
     end
-    B=A;
+    B=real(A);
 end
 
 function [alpha,tau,v] = householder_lapack(A,n)
