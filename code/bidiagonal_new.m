@@ -1,40 +1,46 @@
 function [U,B,V] = bidiagonal_new(A,r)
     [m,n]=size(A);
-    B=A;
+    B=zeros(m,n);
+    d=zeros(n,1);
+    e=zeros(n,1);
     U=eye(m);
     V=eye(n);
     for j=1:n
-        [sigma,w] = householderq(B(j:end,j),m-j+1);  
+        [alpha,tau,v]=householder_lapack(A(j:end,j),m-j+1);
+        d(j)=real(alpha); 
+        Q = eye(m);
+        Q(j:end,j:end) = Q(j:end,j:end)-tau*v*v';
+        U=U*Q;
+        A=Q'*A;
 
-        wt=sigma*w;
-        bt=wt'*B(j:end,j:end);      
-        B(j:end,j:end) = B(j:end,j:end) - w*bt;
-        % wt=scalemat(sigma,w);
-        % bt=matmul(wt',B(j:end,j:end));
-        % B(j:end,j:end)=B(j:end,j:end)-vecmulvectomat(w,bt);
-
-        ut=U(:,j:end)*w;
-        U(:,j:end)=U(:,j:end)-ut*wt';
-        % ut=matmul(U(:,j:end),w);
-        % U(:,j:end)=U(:,j:end)-vecmulvectomat(ut,wt');
-
-        if j <= n-1
-            [sigma,w] = householderq(B(j,j+1:end)',n-j);
-
-            wt=sigma*w;
-            bt=B(j:end,j+1:end)*wt;
-            B(j:end,j+1:end)=B(j:end,j+1:end)-bt*w';
-            % wt=scalemat(sigma,w);
-            % bt=matmul(B(j:end,j+1:end),wt);
-            % B(j:end,j+1:end)=B(j:end,j+1:end)-vecmulvectomat(bt,w');
-
-            vt=w'*V(j+1:end,:);
-            V(j+1:end,:)=V(j+1:end,:)-wt*vt;
-            % vt=matmul(w',V(j+1:end,:));
-            % V(j+1:end,:)=V(j+1:end,:)-vecmulvectomat(wt,vt);
+        if j<n
+            [alpha,tau,v]=householder_lapack(A(j,j+1:end)',n-j);
+            e(j)=real(alpha);
+            P=eye(n);
+            P(j+1:end,j+1:end)=P(j+1:end,j+1:end)-tau*v*v';
+            V=V*P;
+            A=A*P;
         end
     end
+    B=real(A);
+end
 
+function [alpha,tau,v] = householder_lapack(A,n)
+    alpha=A(1);
+    xnorm=norm(A(2:end),'fro');
+    alphr=real(alpha);
+    alphi=imag(alpha);
+    v=zeros(n,1);
+    v(1)=1;
+    if xnorm==0 && alphi==0
+        tau=0;
+        return
+    end
+    beta=-1*sign(alphr)*sqrt(alphr^2+alphi^2+xnorm^2);
+    tau=complex((beta-alphr)/beta,-alphi/beta);
+    alpha=1/(alpha-beta);
+    v(2:end)=A(2:end)*alpha;
+    alpha=beta;
 end
 
 function [sigma,w] = householderp(x,len_x)

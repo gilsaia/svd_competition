@@ -1,4 +1,5 @@
 function [U,S,V] = bidiagnoal_svd(B)
+    % B=U*S*V'
     [n,n]=size(B);
     theta=1e-16;
     tol=1e-14;
@@ -22,13 +23,13 @@ function [U,S,V] = bidiagnoal_svd(B)
         upper=bmax/2;
         lower=min(mumin*n^(1/2),mumin*n^-(1/2));
         if n*lower/upper<max(theta/tol,1e-2)
-            [U,Bt,V]=implicitQR(Bt,U,V);
+            [U,Bt,V]=implicitQR(Bt,U,V,s);
         else
-            [U,Bt,V]=implicitQR(Bt,U,V);
+            [U,Bt,V]=standardQR(Bt,U,V,s);
         end
         B(s:e,s:e)=Bt;
     end
-    S=zeros(n);
+    S=zeros(n,n);
     for i=1:n
         S(i,i)=B(i,i);
     end
@@ -49,17 +50,8 @@ function [Bt,mumin] = stop_criterion(Bt,tol)
     end
 end
 
-function [v1c,v2c] = update(cs,sn,v1,v2)
-    v1c=v1;
-    v2c=v2;
-    [t,n]=size(v1);
-    for i=1:n
-        v1c(i)=cs*v1(i)+sn*v2(i);
-        v2c(i)=-sn*v1(i)+cs*v2(i);
-    end
-end
 
-function [cs,sn,r] = ROT(f,g)
+function [cs,sn,r] = rot(f,g)
     if f==0
         cs=0;
         sn=1;
@@ -79,31 +71,49 @@ function [cs,sn,r] = ROT(f,g)
     end
 end
 
-function [U,B,V] = implicitQR(B,U,V)
-    [n,n]=size(B);
-    oldcs=1;
-    % oldsn=0;
-    f=B(1,1);
-    g=B(1,2);
+
+function [U,B,V] = implicitQR(B,U,V,st)
+    n=size(B,1);
     for i=1:n-1
-        [cs,sn,r]=ROT(f,g);
-        [V(i,:),V(i+1,:)]=update(cs,sn,V(i,:),V(i+1,:));
-        if i~=1
-            B(i-1,i)=oldsn*r;
-        end
-        f=oldcs*r;
-        g=B(i+1,i+1)*sn;
-        h=B(i+1,i+1)*cs;
-        [cs,sn,r]=ROT(f,g);
-        [U(i,:),U(i+1,:)]=update(cs,sn,U(i,:),U(i+1,:));
-        B(i,i)=r;
-        f=h;
-        if i<n-1
-            g=B(i+1,i+2);
-        end
-        oldcs=cs;
-        oldsn=sn;
+        [c s r]=rot(B(i,i),B(i,i+1));
+        Q=eye(n);
+        Q(i:i+1,i:i+1)=[c s;-s c];
+        B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
+        V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
+        [c s r]=rot(B(i,i),B(i+1,i));
+        Q=eye(n);
+        Q(i:i+1,i:i+1)=[c s;-s c];
+        B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
+        U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
     end
-    B(n-1,n)=h*sn;
-    B(n,n)=h*cs;
+end
+
+
+function [U,B,V] = standardQR(B,U,V,st)
+    n=size(B,1);
+    a=B(n-1,n-1);
+    b=B(n,n);
+    c=B(n-1,n);
+    d=(a^2-b^2)/2;
+    mu=b-c^2/(d+sign(d)*sqrt(d^2+c^2));
+    x=B(1,1)^2-mu;
+    z=B(1,1)*B(1,2);
+    for i=1:n-1
+        [c s r]=rot(x,z);
+        Q=eye(n);
+        Q(i:i+1,i:i+1)=[c s;-s c];
+        B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
+        V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
+        x=B(i,i);
+        z=B(i+1,i);
+        [c s r]=rot(x,z);
+        Q=eye(n);
+        Q(i:i+1,i:i+1)=[c s;-s c];
+        B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
+        U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
+        if i<n-1
+            x=B(i,i+1);
+            z=B(i,i+2);
+        end
+    end
 end
