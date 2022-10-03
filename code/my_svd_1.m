@@ -1,5 +1,4 @@
 function [u,s,v]=my_svd_1(A,r)
-    
     tic;
     [U,B,V]=bidiagonal_new(A,r);
     bitime=toc;
@@ -12,16 +11,16 @@ function [u,s,v]=my_svd_1(A,r)
     disp(sprintf('Bidiagnoal time %f,SVD time %f', bitime,bisvdtime));
 
 
-    e1=norm(U*B*V-A,'fro')/norm(A,'fro');
+    e1=norm(U*B*V'-A,'fro')/norm(A,'fro');
     disp(sprintf('bidiagonalization E1:%f',e1));
 
-    remain=Bo-Ux'*Bt*Vx;
+    remain=Bo-Ux*Bt*Vx';
     e1=norm(remain,'fro')/norm(Bo,'fro');
     g1=max(norm(eye(n)-Ux*Ux','fro'),norm(eye(n)-Vx*Vx','fro'));
     disp(sprintf('bidiagonal svd E1:%f,G1:%f',e1,g1));
 
 
-    A_rec = U(:,1:n)*Ux'*Bt*Vx*V;
+    A_rec = U(:,1:n)*Ux*Bt*Vx'*V';
     e1=norm(A_rec-A,'fro')/norm(A,'fro');
     disp(sprintf('all process E1:%f,G1:%f',e1,g1));
 
