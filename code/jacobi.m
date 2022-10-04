@@ -1,4 +1,4 @@
-function [U,S,V]=jacobi(A,V,n)
+function [U,S,V]=jacobi(A,V,n,r)
     % [U S V]=jacobi_svd(A)
     % A is bidiagonal matrix
     % Singular values come back in S (diag matrix)
@@ -6,7 +6,7 @@ function [U,S,V]=jacobi(A,V,n)
     % One-sided Jacobi algorithm for SVD
 
 
-    TOL=1e-4;
+    TOL=1e-8;
     MAX_STEPS=40;
     U=A;
     for steps=1:MAX_STEPS
@@ -56,7 +56,8 @@ function [U,S,V]=jacobi(A,V,n)
     end
     % the singular values are the norms of the columns of U
     % the left singular vectors are the normalized columns of U
-    for j=1:n
+    singvals=zeros(n,1);
+    for j=1:r
         singvals(j)=norm(U(:,j),'fro');
         for i=1:n
             U(i,j)=U(i,j)/singvals(j);
