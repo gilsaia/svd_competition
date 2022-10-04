@@ -6,7 +6,7 @@ function [U,S,V]=jacobi_svd(A)
     % One-sided Jacobi algorithm for SVD
 
 
-    TOL=1.e-8;
+    TOL=1.e-4;
     MAX_STEPS=40;
     n=size(A,2);
     U=A;
@@ -45,20 +45,8 @@ function [U,S,V]=jacobi_svd(A)
                 end
             end
         end
-        % the singular values are the norms of the columns of U
-        % the left singular vectors are the normalized columns of U
-        UT=U;
-        for j=1:n
-            singvals(j)=norm(U(:,j),'fro');
-            for i=1:n
-                UT(i,j)=UT(i,j)/singvals(j);
-            end
-        end
-        S=diag(singvals);
-        AT=UT*S*V';
-        Remain=A-AT;
-        disp(sprintf('Step:%d Coverge:%f,Norm:%f',steps,converge,norm(Remain,'fro')/norm(A,'fro')));
         if converge < TOL
+            disp(sprintf('jacobi iterations %d',steps));
             break;
         end
     end
@@ -81,5 +69,3 @@ function s = col_square_sum(U, n)
     for i = 1:n
         s(i) = norm(U(:,i), 'fro')^2;
     end
-
-
