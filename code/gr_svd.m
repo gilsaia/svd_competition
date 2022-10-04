@@ -1,6 +1,6 @@
 function [U,S,V] = gr_svd(B)
     [n,n]=size(B);
-    sigma=1e-14;
+    sigma=1e-8;
     U=eye(n);
     V=eye(n);
     while 1
@@ -21,7 +21,6 @@ function [U,S,V] = gr_svd(B)
             break
         end
         flag=0;
-        e=e-1;
         for i=s:e
             if abs(B(i,i))<1e-8
                 B(i,i+1)=0;
