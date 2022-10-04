@@ -1,17 +1,17 @@
 function [U,S,V,B] = dk_svd(B,U,V,n)
     % B=U*S*V'
     % input param is U from bid with size(m,m) cut to size(m,n)
-    theta=1e-16;
-    tol=1e-14;
+    theta=1e-19;
+    tol=1e-18;
     upperd=n;
     while 1
         e=upperd;
-        while e>1&&abs(B(e-1,e))<1e-10
+        while e>1&&abs(B(e-1,e))<1e-15
             e-=1;
             upperd-=1;
         end
         s=e-1;
-        while s>1&&abs(B(s-1,s))>1e-10
+        while s>1&&abs(B(s-1,s))>1e-15
             s-=1;
         end
         if e==1
@@ -19,17 +19,68 @@ function [U,S,V,B] = dk_svd(B,U,V,n)
         end
         Bt=B(s:e,s:e);
         [Bt,mumin]=stop_criterion(Bt,tol);
-        bmax=max(max(Bt));
-        upper=max(bmax/2,1e-16);
-        lower=min(mumin*n^(1/2),mumin*n^-(1/2));
-        if n*lower/upper<max(theta/tol,1e-2)
-            [U,Bt,V]=implicitQR(Bt,U,V,s);
+        if (e-s)==1
+            [U,Bt,V]=twoeleQR(Bt,U,V,s);
         else
-            [U,Bt,V]=standardQR(Bt,U,V,s);
+            bmax=max(max(Bt));
+            upper=max(bmax/2,1e-16);
+            lower=min(mumin*n^(1/2),mumin*n^-(1/2));
+            if n*lower/upper<max(theta/tol,1e-1)
+                [U,Bt,V]=implicitQR(Bt,U,V,s);
+            else
+                [U,Bt,V]=standardQR(Bt,U,V,s);
+            end
         end
+        % disp(sprintf('E:%d S:%d',e,s));
         B(s:e,s:e)=Bt;
     end
     S=diag(diag(B));
+end
+
+function [U,B,V] = twoeleQR(B,U,V,st)
+    a=B(1,1);
+    b=B(1,2);
+    c=B(2,2);
+    abcsum=a^2+b^2+c^2;
+    delta=sqrt(abcsum^2-4*a^2*c^2);
+    lambda=zeros(2,1);
+    if(abs(abcsum+delta)>abs(abcsum-delta))
+        lambda(1)=(abcsum+delta)/2;
+        lambda(2)=(abcsum-delta)/2;
+    else
+        lambda(1)=(abcsum-delta)/2;
+        lambda(2)=(abcsum+delta)/2;
+    end
+
+    v=ones(2,1);
+    v(2)=-(a^2-lambda(1))/(a*b);
+
+    vnorm=norm(v,'fro');
+    v(1)/=vnorm;
+    v(2)/=vnorm;
+
+    u=ones(2,1);
+    u(2)=-(a^2-lambda(2))/(a*b);
+
+    unorm=norm(u,'fro');
+    u(1)/=unorm;
+    u(2)/=unorm;
+
+    vsum=v(1)^2+v(2)^2;
+    pot=u(1)*v(1)+u(2)*v(2);
+    u(1)=u(1)-(pot/vsum)*v(1);
+    u(2)=u(2)-(pot/vsum)*v(2);
+
+    vt=[v,u];
+    V(:,st:st+1)=matmul(V(:,st:st+1),vt);
+
+    ut=matmul(B,vt);
+    ut=matmul(ut,diag([1/sqrt(lambda(1)),1/sqrt(lambda(2))]));
+    U(:,st:st+1)=matmul(U(:,st:st+1),ut);
+
+    lambda(1)=sqrt(lambda(1));
+    lambda(2)=sqrt(lambda(2));
+    B=diag(lambda);
 end
 
 function [Bt,mumin] = stop_criterion(Bt,tol)
