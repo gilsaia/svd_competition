@@ -70,37 +70,35 @@ function [cs,sn,r] = rot(f,g)
     end
 end
 
-% % B*[c -s;s c]
-% function [b] = updateBleft(b,c,s)
-%     x=b(1,1);
-%     y=b(1,2);
-%     w=b(2,1);
-%     z=b(2,2);
-%     b(1,1)=c*x+s*y;
-%     b(1,2)=-s*x+c*y;
-%     b(2,1)=c*w+s*z;
-%     b(2,2)=-s*w+c*z;
-% end
+% B*[c -s;s c]
+function [b] = updateBleft(b,c,s)
+    n=size(b,1);
+    for i=1:n
+        tmp=b(i,1);
+        b(i,1)=c*tmp+s*b(i,2);
+        b(i,2)=-s*tmp+c*b(i,2);
+    end
+end
 
-% % [c s;-s c]*B
-% function [b] = updateBright(b,c,s)
-%     x=b(1,1);
-%     y=b(1,2);
-%     w=b(2,1);
-%     z=b(2,2);
-%     b(1,1)=c*x+s*w;
-%     b(1,2)=c*y+s*z;
-%     b(2,1)=-s*x+c*w;
-%     b(2,2)=-s*y+c*z;
-% end
+% [c s;-s c]*B
+function [b] = updateBright(b,c,s)
+    n=size(b,2);
+    for i=1:n
+        tmp=b(1,i);
+        b(1,i)=c*tmp+s*b(2,i);
+        b(2,i)=-s*tmp+c*b(2,i);
+    end
+end
 
 function [U,B,V] = implicitQR(B,U,V,st)
     n=size(B,1);
     for i=1:n-1
         [c s r]=rot(B(i,i),B(i,i+1));
+        % B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
         B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
         V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
         [c s r]=rot(B(i,i),B(i+1,i));
+        % B(i:i+1,max(i-1,1):i+1)=updateBright(B(i:i+1,max(i-1,1):i+1),c,s);
         B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
         U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
     end
@@ -118,11 +116,13 @@ function [U,B,V] = standardQR(B,U,V,st)
     z=B(1,1)*B(1,2);
     for i=1:n-1
         [c s r]=rot(x,z);
+        % B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
         B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
         V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
         x=B(i,i);
         z=B(i+1,i);
         [c s r]=rot(x,z);
+        % B(i:i+1,max(i-1,1):i+1)=updateBright(B(i:i+1,max(i-1,1):i+1),c,s);
         B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
         U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
         if i<n-1
