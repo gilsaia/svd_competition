@@ -1,8 +1,8 @@
 function [U,S,V,B] = dk_svd(B,U,V,n)
     % B=U*S*V'
     % input param is U from bid with size(m,m) cut to size(m,n)
-    theta=1e-19;
-    tol=1e-18;
+    theta=1e-16;
+    tol=1e-10;
     upperd=n;
     while 1
         e=upperd;
@@ -20,12 +20,12 @@ function [U,S,V,B] = dk_svd(B,U,V,n)
         Bt=B(s:e,s:e);
         [Bt,mumin]=stop_criterion(Bt,tol);
         if (e-s)==1
-            [U,Bt,V]=twoeleQR(Bt,U,V,s);
+            [U,Bt,V]=twoelementQR(Bt,U,V,s);
         else
             bmax=max(max(Bt));
             upper=max(bmax/2,1e-16);
             lower=min(mumin*n^(1/2),mumin*n^-(1/2));
-            if n*lower/upper<max(theta/tol,1e-1)
+            if n*lower/upper<max(theta/tol,1e-2)
                 [U,Bt,V]=implicitQR(Bt,U,V,s);
             else
                 [U,Bt,V]=standardQR(Bt,U,V,s);
@@ -37,50 +37,114 @@ function [U,S,V,B] = dk_svd(B,U,V,n)
     S=diag(diag(B));
 end
 
-function [U,B,V] = twoeleQR(B,U,V,st)
-    a=B(1,1);
-    b=B(1,2);
-    c=B(2,2);
-    abcsum=a^2+b^2+c^2;
-    delta=sqrt(abcsum^2-4*a^2*c^2);
-    lambda=zeros(2,1);
-    if(abs(abcsum+delta)>abs(abcsum-delta))
-        lambda(1)=(abcsum+delta)/2;
-        lambda(2)=(abcsum-delta)/2;
-    else
-        lambda(1)=(abcsum-delta)/2;
-        lambda(2)=(abcsum+delta)/2;
+function [U,B,V] = twoelementQR(B,U,V,st)
+    f=B(1,1);
+    h=B(2,2);
+    g=B(1,2);
+    ft=B(1,1);
+    fa=abs(ft);
+    ht=B(2,2);
+    ha=abs(ht);
+    pmax=1;
+    swap=0;
+    if ha>fa
+        swap=1;
+        pmax=3;
+        temp=ft;
+        ft=ht;
+        ht=temp;
+        temp=fa;
+        fa=ha;
+        ha=temp;
     end
-
-    v=ones(2,1);
-    v(2)=-(a^2-lambda(1))/(a*b);
-
-    vnorm=norm(v,'fro');
-    v(1)/=vnorm;
-    v(2)/=vnorm;
-
-    u=ones(2,1);
-    u(2)=-(a^2-lambda(2))/(a*b);
-
-    unorm=norm(u,'fro');
-    u(1)/=unorm;
-    u(2)/=unorm;
-
-    vsum=v(1)^2+v(2)^2;
-    pot=u(1)*v(1)+u(2)*v(2);
-    u(1)=u(1)-(pot/vsum)*v(1);
-    u(2)=u(2)-(pot/vsum)*v(2);
-
-    vt=[v,u];
+    gt=B(1,2);
+    ga=abs(gt);
+    if ga<1e-18
+        ssmin=ha;
+        ssmax=fa;
+        clt=1;
+        crt=1;
+        slt=0;
+        srt=0;
+    else
+        gasmal=1;
+        if ga>fa
+            pmax=2;
+            if (fa/ga)<1e-16
+                gasmal=0;
+                ssmax=ga;
+                if ha>1
+                    ssmin=fa/(ga/ha);
+                else
+                    ssmin=(fa/ga)*ha;
+                end
+                clt=1;
+                slt=ht/gt;
+                srt=1;
+                crt=ft/gt;
+            end
+        end
+        if gasmal~=0
+            d=fa-ha;
+            if abs(d-fa)<1e-18
+                l=1;
+            else
+                l=d/fa;
+            end
+            m=gt/ft;
+            t=2-l;
+            mm=m*m;
+            tt=t*t;
+            s=sqrt(tt+mm);
+            if abs(l)<1e-18
+                r=abs(m);
+            else
+                r=sqrt(l*l+mm);
+            end
+            a=0.5*(s+r);
+            ssmin=ha/a;
+            ssmax=fa*a;
+            if abs(mm)<1e-18
+                if abs(l)<1e-18
+                    t=2*sign(ft)*sign(gt);
+                else
+                    t=gt/(d*sign(ft))+m/t;
+                end
+            else
+                t=(m/(s+t)+m/(r+l))*(1+a);
+            end
+            l=sqrt(t*t+4);
+            crt=2/l;
+            srt=t/l;
+            clt=(crt+srt*m)/a;
+            slt=(ht/ft)*srt/a;
+        end
+    end
+    if swap==1
+        csl=srt;
+        snl=crt;
+        csr=slt;
+        snr=clt;
+    else
+        csl=clt;
+        snl=slt;
+        csr=crt;
+        snr=srt;
+    end
+    if pmax==1
+        tsign=sign(csr)*sign(csl)*sign(f);
+    elseif pmax==2
+        tsign=sign(snr)*sign(csl)*sign(g);
+    else
+        tsign=sign(snr)*sign(snl)*sign(h);
+    end
+    ssmax=ssmax*sign(tsign);
+    ssmin=ssmin*sign(tsign*sign(f)*sign(h));
+    B=diag([ssmax,ssmin]);
+    vt=[csr -snr;snr csr];
     V(:,st:st+1)=matmul(V(:,st:st+1),vt);
-
-    ut=matmul(B,vt);
-    ut=matmul(ut,diag([1/sqrt(lambda(1)),1/sqrt(lambda(2))]));
+    ut=[csl -snl;snl csl];
     U(:,st:st+1)=matmul(U(:,st:st+1),ut);
-
-    lambda(1)=sqrt(lambda(1));
-    lambda(2)=sqrt(lambda(2));
-    B=diag(lambda);
 end
 
 function [Bt,mumin] = stop_criterion(Bt,tol)
