@@ -1,4 +1,4 @@
-function [U,S,V,B] = dk_svd(B,U,V,n)
+function [U,S,V] = dk_svd(B,U,V,n)
     % B=U*S*V'
     % input param is U from bid with size(m,m) cut to size(m,n)
     theta=1e-16;
@@ -25,13 +25,12 @@ function [U,S,V,B] = dk_svd(B,U,V,n)
             bmax=max(max(Bt));
             upper=max(bmax/2,1e-16);
             lower=min(mumin*n^(1/2),mumin*n^-(1/2));
-            if n*lower/upper<max(theta/tol,1e-2)
+            if n*lower/upper<max(theta/tol,1e-5)
                 [U,Bt,V]=implicitQR(Bt,U,V,s);
             else
                 [U,Bt,V]=standardQR(Bt,U,V,s);
             end
         end
-        % disp(sprintf('E:%d S:%d',e,s));
         B(s:e,s:e)=Bt;
     end
     S=diag(diag(B));

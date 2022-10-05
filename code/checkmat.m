@@ -1,8 +1,8 @@
 function [C] = checkmat()
-    A=rand(17,19);
-    B=rand(19,23);
+    A=rand(1024,1024);
+    B=rand(1024,1024);
     tic;
-    C=matmul(A,B);
+    C=matmulf(A,B);
     b=toc;
     c=norm(C-A*B,'fro');
     disp(sprintf('Time b:%f,Norm:%f', b,c));
