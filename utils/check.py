@@ -128,7 +128,7 @@ def get_run_cmd(args, data_name, label_name):
     return cmd
 
 
-RETRY_NUM = 3
+RETRY_NUM = 1
 MATRIX_NUM = 200
 
 

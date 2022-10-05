@@ -29,10 +29,7 @@ function [U,S,V] = bidiagnoal_svd(B)
         end
         B(s:e,s:e)=Bt;
     end
-    S=zeros(n,n);
-    for i=1:n
-        S(i,i)=B(i,i);
-    end
+    S=diag(diag(B));
 end
 
 function [Bt,mumin] = stop_criterion(Bt,tol)

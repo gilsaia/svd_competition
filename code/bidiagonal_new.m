@@ -43,6 +43,16 @@ function [alpha,tau,v] = householder_lapack(A,n)
     alpha=beta;
 end
 
+function [sigma,w] = householderp(x,len_x)
+    x_norm = norm(x, 'fro');
+    niu = sign(real(x(1))) * x_norm;
+    k = (abs(real(x(1)))+x_norm) / x_norm;
+    xt=x;
+    xt(1)+=niu;
+    w = xt;
+    sigma = k / (niu*k*(x(1)+niu)');
+end
+
 function [delta] = householder(x, len_x)
     x_norm = norm(x, 'fro');
     niu = sign(real(x(1))) * x_norm;
@@ -52,6 +62,15 @@ function [delta] = householder(x, len_x)
     w = (x+niu*e1) * sqrt(k) / (x(1)+niu);
     sigma = (x(1)+niu) / (niu*k);
     delta = sigma * w * w';
+end
+
+function [sigma,w] = householderq(x,len_x)
+    x_norm = norm(x, 'fro');
+    niu = sign(real(x(1))) * x_norm;
+    xt=x;
+    xt(1)+=niu;
+    w = xt;
+    sigma = 1 / (niu*(x(1)+niu)');
 end
 
 function [delta] = householder2(x, len_x)

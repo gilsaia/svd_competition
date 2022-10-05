@@ -19,6 +19,7 @@ for i=1:200
     [e1,g1]=check_svd(a,u_t,s_t,v_t);
     E1(i)=e1;
     G1(i)=g1;
+    disp(sprintf('Index:%d Rank:%d E1:%f G1:%f Time:%f',i,l,e1,g1,run_time(i)));
 end
 res_name=[arg_list{4},'res.mat'];
 save('-v6',res_name,'E1','G1','run_time');
