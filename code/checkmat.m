@@ -1,10 +1,9 @@
-function [C] = checkmat(A)
+function [C] = checkmat()
+    A=rand(17,19);
+    B=rand(19,23);
     tic;
-    B=matmul(A,A');
-    a=toc;
-    tic;
-    C=matmulf(A,A');
+    C=matmul(A,B);
     b=toc;
-    c=norm(B-C,'fro');
-    disp(sprintf('Time a:%f,Time b:%f,Norm:%f', a,b,c));
+    c=norm(C-A*B,'fro');
+    disp(sprintf('Time b:%f,Norm:%f', b,c));
 end
