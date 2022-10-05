@@ -8,32 +8,22 @@ function [U,B,V,d,e] = bidiagonal_r(A,r,m,n)
         [alpha,tau,v]=householder_lapack(A(j:end,j),m-j+1);
         d(j)=real(alpha); 
 
-        % tt=tau*v;
-        % ut=U(:,j:end)*tt;
-        % U(:,j:end)=U(:,j:end)-ut*v';
         tt=scalemat(tau,v);
-        ut=matmul(U(:,j:end),tt);
+        ut=matmulf(U(:,j:end),tt);
         U(:,j:end)=U(:,j:end)-vecmulvectomat(ut,v');
 
-        % bt=A(j:end,j+1:end)'*tt;
-        % A(j:end,j+1:end)=(A(j:end,j+1:end)'-bt*v')';
-        bt=matmul(A(j:end,j+1:end)',tt);
+        bt=matmulf(A(j:end,j+1:end)',tt);
         A(j:end,j+1:end)=(A(j:end,j+1:end)'-vecmulvectomat(bt,v'))';
 
         if j<n
             [alpha,tau,v]=householder_lapack(A(j,j+1:end)',n-j);
             e(j)=real(alpha);
 
-            % tt=tau*v;
-            % vt=V(:,j+1:end)*tt;
-            % V(:,j+1:end)=V(:,j+1:end)-vt*v';
             tt=scalemat(tau,v);
-            vt=matmul(V(:,j+1:end),tt);
+            vt=matmulf(V(:,j+1:end),tt);
             V(:,j+1:end)=V(:,j+1:end)-vecmulvectomat(vt,v');
 
-            % bt=A(j+1:end,j+1:end)*tt;
-            % A(j+1:end,j+1:end)=A(j+1:end,j+1:end)-bt*v';
-            bt=matmul(A(j+1:end,j+1:end),tt);
+            bt=matmulf(A(j+1:end,j+1:end),tt);
             A(j+1:end,j+1:end)=A(j+1:end,j+1:end)-vecmulvectomat(bt,v');
         end
     end

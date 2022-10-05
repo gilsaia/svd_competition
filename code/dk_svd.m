@@ -142,9 +142,9 @@ function [U,B,V] = twoelementQR(B,U,V,st)
     ssmin=ssmin*sign(tsign*sign(f)*sign(h));
     B=diag([ssmax,ssmin]);
     vt=[csr -snr;snr csr];
-    V(:,st:st+1)=matmul(V(:,st:st+1),vt);
+    V(:,st:st+1)=matmulf(V(:,st:st+1),vt);
     ut=[csl -snl;snl csl];
-    U(:,st:st+1)=matmul(U(:,st:st+1),ut);
+    U(:,st:st+1)=matmulf(U(:,st:st+1),ut);
 end
 
 function [Bt,mumin] = stop_criterion(Bt,tol)
@@ -208,12 +208,10 @@ function [U,B,V] = implicitQR(B,U,V,st)
     for i=1:n-1
         [c s r]=rot(B(i,i),B(i,i+1));
         B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
-        % B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
-        V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
+        V(:,st+i-1:st+i)=matmulf(V(:,st+i-1:st+i),[c -s;s c]);
         [c s r]=rot(B(i,i),B(i+1,i));
         B(i:i+1,i:min(i+2,n))=updateBright(B(i:i+1,i:min(i+2,n)),c,s);
-        % B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
-        U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
+        U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
     end
 end
 
@@ -230,14 +228,12 @@ function [U,B,V] = standardQR(B,U,V,st)
     for i=1:n-1
         [c s r]=rot(x,z);
         B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
-        % B(:,i:i+1)=matmul(B(:,i:i+1),[c -s;s c]);
-        V(:,st+i-1:st+i)=matmul(V(:,st+i-1:st+i),[c -s;s c]);
+        V(:,st+i-1:st+i)=matmulf(V(:,st+i-1:st+i),[c -s;s c]);
         x=B(i,i);
         z=B(i+1,i);
         [c s r]=rot(x,z);
         B(i:i+1,i:min(i+2,n))=updateBright(B(i:i+1,i:min(i+2,n)),c,s);
-        % B(i:i+1,:)=matmul([c s;-s c],B(i:i+1,:));
-        U(:,st+i-1:st+i)=matmul(U(:,st+i-1:st+i),[c -s;s c]);
+        U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
         if i<n-1
             x=B(i,i+1);
             z=B(i,i+2);
