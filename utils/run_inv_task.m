@@ -13,6 +13,7 @@ for i=1:200
     run_time(i)=toc;
     [e2]=check_inv(a,inv_a);
     E2(i)=e2;
+    disp(sprintf('Index:%d E2:%f Time:%f',i,e2,run_time(i)));
 end
 res_name=[arg_list{3},'res.mat'];
 save('-v6',res_name,'E2','run_time');
