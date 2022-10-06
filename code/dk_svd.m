@@ -4,9 +4,7 @@ function [U,S,V] = dk_svd(B,U,V,n)
     theta=1e-16;
     tol=1e-10;
     upperd=n;
-    iter=0;
     while 1
-        iter+=1;
         e=upperd;
         while e>1&&abs(B(e-1,e))<1e-15
             e-=1;
@@ -35,7 +33,6 @@ function [U,S,V] = dk_svd(B,U,V,n)
         end
         B(s:e,s:e)=Bt;
     end
-    disp(sprintf('Iter:%d',iter));
     S=diag(diag(B));
 end
 
@@ -183,8 +180,6 @@ function [cs,sn,r] = rot(f,g)
         cs=t*sn;
         r=g*tt;
     end
-    % cs=-cs;
-    % sn=-sn;
 end
 
 % B*[c -s;s c]
@@ -216,18 +211,6 @@ function [U,B,V] = implicitQR(B,U,V,st)
         [c s r]=rot(B(i,i),B(i+1,i));
         B(i:i+1,i:min(i+2,n))=updateBright(B(i:i+1,i:min(i+2,n)),c,s);
         U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
-    end
-end
-
-function [U,B,V] = implicitQR_rev(B,U,V,st)
-    n=size(B,1);
-    for i=n-1:-1:1
-        [c s r]=rot(B(i,i),B(i+1,i));
-        B(i:i+1,i:min(i+2,n))=updateBright(B(i:i+1,i:min(i+2,n)),c,s);
-        U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
-        [c s r]=rot(B(i,i),B(i,i+1));
-        B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
-        V(:,st+i-1:st+i)=matmulf(V(:,st+i-1:st+i),[c -s;s c]);
     end
 end
 
