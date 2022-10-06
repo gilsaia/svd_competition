@@ -104,10 +104,12 @@ def clean_tmpfile(args):
 
 
 data_name_list = ['data_m_256_n_128_dataNum_200.mat',
+                  'data_m_256_n_128_dataNum_200.mat',
                   'data_m_512_n_256_dataNum_200.mat',
                   'data_m_1024_n_512_dataNum_200.mat']
 
 label_name_list = ['data_m_256_n_128_label_r.mat',
+                   'data_m_256_n_128_label_r.mat',
                    'data_m_512_n_256_label_r.mat',
                    'data_m_1024_n_512_label_r.mat']
 

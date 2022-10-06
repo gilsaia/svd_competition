@@ -1,10 +1,11 @@
-function [U,B,V] = bidiagonal_r(A,r,m,n)
+function [U,B,V,r] = bidiagonal_r_guess(A,bound,m,n)
     B=zeros(m,n);
     d=zeros(n,1);
     e=zeros(n-1,1);
     U=eye(m);
     V=eye(n);
-    for j=1:r
+    r=bound;
+    for j=1:bound
         [alpha,tau,v]=householder_lapack(A(j:end,j),m-j+1);
         d(j)=real(alpha); 
 
@@ -25,6 +26,10 @@ function [U,B,V] = bidiagonal_r(A,r,m,n)
 
             bt=matmulf(A(j+1:end,j+1:end),tt);
             A(j+1:end,j+1:end)=A(j+1:end,j+1:end)-vecmulvectomat(bt,v');
+        end
+        if (abs(d(j))+abs(e(j)))<1e-10
+            r=j;
+            break
         end
     end
     B=diag(d)+diag(e,1);
