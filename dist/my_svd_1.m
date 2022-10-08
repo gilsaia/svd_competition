@@ -1,6 +1,6 @@
 function [u,s,v]=my_svd_1(A,r)
     [m,n]=size(A);
-    [u,b,v]=bidiagonal_r(A,r,m,n);
+    [u,b,v]=bidiagonal_r(A,r+1,m,n);
     [u(:,1:n),s,v]=dk_svd(b,u(:,1:n),v,n);
     [s,v]=change_signval(s,v,r);
     s=[s;zeros(m-n)];
@@ -311,9 +311,9 @@ end
 
 function [S,V] = change_signval(S,V,r)
     for i=1:r
-        if S(r,r)<0
-            S(r,r)=S(r,r)*-1;
-            V(:,r)=scalemat(-1,V(:,r));
+        if S(i,i)<0
+            S(i,i)=S(i,i)*-1;
+            V(:,i)=scalemat(-1,V(:,i));
         end
     end
 end
