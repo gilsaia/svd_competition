@@ -39,6 +39,7 @@ function [U,B,V,r] = bidiagonal_r_guess_energy(A,bound,m,n)
         end
         if bisum~=0&&(abs(d(j))+abs(e(j)))/bisum<1e-5
             r=j;
+            disp(r);
             break
         end
         bisum=bisum+abs(d(j))+abs(e(j));
@@ -71,23 +72,48 @@ function [U,S,V] = dk_svd(B,U,V,n)
     % B=U*S*V'
     % input param is U from bid with size(m,m) cut to size(m,n)
     theta=1e-16;
-    tol=1e-10;
+    tol=1e-6;
     upperd=n;
+    last_s=1;
+    last_e=n;
+    cnt=1;
     while 1
         e=upperd;
-        while e>1&&abs(B(e-1,e))<1e-15
+        while e>1&&abs(B(e-1,e))<1e-9
             e=e-1;
             upperd=upperd-1;
         end
         s=e-1;
-        while s>1&&abs(B(s-1,s))>1e-15
+        while s>1&&abs(B(s-1,s))>1e-9
             s=s-1;
         end
         if e==1
             break
         end
         Bt=B(s:e,s:e);
+%         disp(s);
+%         disp(e);
+        if s==last_s && e==last_e
+            cnt=cnt+1;
+        else
+            cnt=1;
+        end
+        last_s=s;
+        last_e=e;
         [Bt,mumin]=stop_criterion(Bt,tol);
+        if (e-s)<=10 && (e-s)>1
+            if cnt>500 || abs(Bt(1,1))<1e-4 || abs(Bt(end,end))<1e-4
+                if abs(Bt(1,1))+abs(Bt(1,2))<abs(Bt(end-1,end))+abs(Bt(end,end))
+                    Bt=Bt(2:end,2:end);
+                    s=s+1;
+                else
+                    Bt=Bt(1:end-1,1:end-1);
+                    e=e-1;
+                    upperd=upperd-1;
+                end
+                cnt=0;
+            end
+        end
         if (e-s)==1
             [U,Bt,V]=twoelementQR(Bt,U,V,s);
         else
