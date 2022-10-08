@@ -1,19 +1,20 @@
-function [u,s,v]=my_svd_1(A,r)
+function [u,s,v]=my_svd_2(A)
     [m,n]=size(A);
-    [u,b,v]=bidiagonal_r(A,r+1,m,n);
+    [u,b,v,r]=bidiagonal_r_guess(A,n/2+1,m,n);
     [u(:,1:n),s,v]=dk_svd(b,u(:,1:n),v,n);
     [s,v]=change_signval(s,v,r);
     s=[s;zeros(m-n)];
 end
 
 
-function [U,B,V] = bidiagonal_r(A,r,m,n)
+function [U,B,V,r] = bidiagonal_r_guess(A,bound,m,n)
     B=zeros(m,n);
     d=zeros(n,1);
     e=zeros(n-1,1);
     U=eye(m);
     V=eye(n);
-    for j=1:r
+    r=bound;
+    for j=1:bound
         [alpha,tau,v]=householder_lapack(A(j:end,j),m-j+1);
         d(j)=real(alpha); 
 
@@ -35,10 +36,13 @@ function [U,B,V] = bidiagonal_r(A,r,m,n)
             bt=matmulf(A(j+1:end,j+1:end),tt);
             A(j+1:end,j+1:end)=A(j+1:end,j+1:end)-vecmulvectomat(bt,v');
         end
+        if (abs(d(j))+abs(e(j)))<1e-8
+            r=j;
+            break
+        end
     end
     B=diag(d)+diag(e,1);
 end
-
 
 function [alpha,tau,v] = householder_lapack(A,n)
     alpha=A(1);
@@ -69,12 +73,12 @@ function [U,S,V] = dk_svd(B,U,V,n)
     upperd=n;
     while 1
         e=upperd;
-        while e>1&&abs(B(e-1,e))<1e-15
+        while e>1&&abs(B(e-1,e))<0.5*1e-8
             e=e-1;
             upperd=upperd-1;
         end
         s=e-1;
-        while s>1&&abs(B(s-1,s))>1e-15
+        while s>1&&abs(B(s-1,s))>0.5*1e-8
             s=s-1;
         end
         if e==1
@@ -98,7 +102,6 @@ function [U,S,V] = dk_svd(B,U,V,n)
     end
     S=diag(diag(B));
 end
-
 
 function [U,B,V] = twoelementQR(B,U,V,st)
     f=B(1,1);
@@ -210,7 +213,6 @@ function [U,B,V] = twoelementQR(B,U,V,st)
     U(:,st:st+1)=matmulf(U(:,st:st+1),ut);
 end
 
-
 function [Bt,mumin] = stop_criterion(Bt,tol)
     [n,n]=size(Bt);
     mu=zeros(n,1);
@@ -247,7 +249,6 @@ function [cs,sn,r] = rot(f,g)
     end
 end
 
-
 % B*[c -s;s c]
 function [b] = updateBleft(b,c,s)
     n=size(b,1);
@@ -258,7 +259,6 @@ function [b] = updateBleft(b,c,s)
     end
 end
 
-
 % [c s;-s c]*B
 function [b] = updateBright(b,c,s)
     n=size(b,2);
@@ -268,7 +268,6 @@ function [b] = updateBright(b,c,s)
         b(2,i)=-s*tmp+c*b(2,i);
     end
 end
-
 
 function [U,B,V] = implicitQR(B,U,V,st)
     n=size(B,1);
@@ -281,7 +280,6 @@ function [U,B,V] = implicitQR(B,U,V,st)
         U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
     end
 end
-
 
 function [U,B,V] = standardQR(B,U,V,st)
     n=size(B,1);
@@ -307,7 +305,6 @@ function [U,B,V] = standardQR(B,U,V,st)
         end
     end
 end
-
 
 function [S,V] = change_signval(S,V,r)
     for i=1:r
@@ -397,7 +394,7 @@ function [C] = matmulf(A,B)
         C=C(1:orim,1:oriy);
         return
     end
-    C=zeros(m,y);              
+    C=zeros(m,y);
     AT=A.';
     for i=1:m
         for j=1:y

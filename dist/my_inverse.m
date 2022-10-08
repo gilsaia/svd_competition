@@ -172,7 +172,7 @@ function [U,B,r] = bidiagonal_r_guess_withoutv(A,bound,m,n)
             bt=matmulf(A(j+1:end,j+1:end),tt);
             A(j+1:end,j+1:end)=A(j+1:end,j+1:end)-vecmulvectomat(bt,v');
         end
-        if (abs(d(j))+abs(e(j)))<1e-10
+        if (abs(d(j))+abs(e(j)))<1e-9
             r=j;
             break
         end
@@ -208,12 +208,12 @@ function [U,S] = dk_svd_withoutv(B,U,n)
     upperd=n;
     while 1
         e=upperd;
-        while e>1&&abs(B(e-1,e))<1e-15
+        while e>1&&abs(B(e-1,e))<0.5*1e-8
             e=e-1;
             upperd=upperd-1;
         end
         s=e-1;
-        while s>1&&abs(B(s-1,s))>1e-15
+        while s>1&&abs(B(s-1,s))>0.5*1e-8
             s=s-1;
         end
         if e==1
