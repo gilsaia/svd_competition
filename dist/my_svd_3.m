@@ -1,19 +1,20 @@
 function [u,s,v]=my_svd_3(A)
     [m,n]=size(A);
-    [u,b,v,r]=bidiagonal_r_guess(A,n/2+1,m,n);
+    [u,b,v,r]=bidiagonal_r_guess_energy(A,n/2+1,m,n);
     [u(:,1:n),s,v]=dk_svd(b,u(:,1:n),v,n);
     [s,v]=change_signval(s,v,r);
     s=[s;zeros(m-n)];
 end
 
 
-function [U,B,V,r] = bidiagonal_r_guess(A,bound,m,n)
+function [U,B,V,r] = bidiagonal_r_guess_energy(A,bound,m,n)
     B=zeros(m,n);
     d=zeros(n,1);
     e=zeros(n-1,1);
     U=eye(m);
     V=eye(n);
     r=bound;
+    bisum=0;
     for j=1:bound
         [alpha,tau,v]=householder_lapack(A(j:end,j),m-j+1);
         d(j)=real(alpha); 
@@ -36,10 +37,11 @@ function [U,B,V,r] = bidiagonal_r_guess(A,bound,m,n)
             bt=matmulf(A(j+1:end,j+1:end),tt);
             A(j+1:end,j+1:end)=A(j+1:end,j+1:end)-vecmulvectomat(bt,v');
         end
-        if (abs(d(j))+abs(e(j)))<1e-10
+        if bisum~=0&&(abs(d(j))+abs(e(j)))/bisum<1e-5
             r=j;
             break
         end
+        bisum=bisum+abs(d(j))+abs(e(j));
     end
     B=diag(d)+diag(e,1);
 end
