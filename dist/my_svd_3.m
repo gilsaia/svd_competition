@@ -8,6 +8,7 @@ end
 
 
 function [U,B,V,r] = bidiagonal_r_guess_energy(A,bound,m,n)
+    B=zeros(m,n);
     d=zeros(n,1);
     e=zeros(n-1,1);
     U=eye(m);

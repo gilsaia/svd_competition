@@ -7,7 +7,7 @@ function [w]=sv_approx(s,delta,r,n)
     delta(n+1)=presum;
     for i=n:-1:n-r+1
         y=get_init(i,s,delta,n);
-        disp(y);
+        % disp(y);
         cnt=0;
         while 1
             cnt=cnt+1;
@@ -29,8 +29,8 @@ end
 
 function [is_stop]=stop(k,eta,delta,y)
     v=100*eps*min(abs(delta(k)-y),abs(delta(k+1)-y));
-    disp(abs(eta));
-    disp(v);
+    % disp(abs(eta));
+    % disp(v);
     if abs(eta)<=v
         is_stop=1;
     else
@@ -103,7 +103,7 @@ function [y]=get_init(k,s,delta,n)
             end
         end
     end
-    y=tau+delta(K);
+    y=min(tau+delta(K),(delta(n)+delta(n+1))/2)
 end
 
 
