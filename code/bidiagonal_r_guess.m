@@ -51,6 +51,6 @@ function [alpha,tau,v] = householder_lapack(A,n)
     alpha=1/(alpha-beta);
     v(1)=1/alpha;
     v(2:end)=A(2:end);
-    tau*=(alpha*alpha');
+    tau=tau*(alpha*alpha');
     alpha=beta;
 end

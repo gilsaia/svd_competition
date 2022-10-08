@@ -7,12 +7,12 @@ function [U,S,V] = dk_svd(B,U,V,n)
     while 1
         e=upperd;
         while e>1&&abs(B(e-1,e))<1e-15
-            e-=1;
-            upperd-=1;
+            e=e-1;
+            upperd=upperd-1;
         end
         s=e-1;
         while s>1&&abs(B(s-1,s))>1e-15
-            s-=1;
+            s=s-1;
         end
         if e==1
             break

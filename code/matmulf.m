@@ -10,7 +10,7 @@ function [C] = matmulf(A,B)
             oriy=y;
             if mod(y,2)==1
                 B=[B zeros(x,1)];
-                y+=1;
+                y=y+1;
             end
             C=twotwoleft(A,B,x,y);
             C=C(1:orix,1:oriy);
@@ -23,7 +23,7 @@ function [C] = matmulf(A,B)
             orin=n;
             if mod(m,2)==1
                 A=[A;zeros(1,n)];
-                m+=1;
+                m=m+1;
             end
             C=twotwoleft(B',A',n,m);
             C=C(1:orin,1:orim)';
@@ -37,17 +37,17 @@ function [C] = matmulf(A,B)
         oriy=y;
         if mod(m,2)==1
             A=[A;zeros(1,n)];
-            m+=1;
+            m=m+1;
         end
         if mod(n,2)==1
             A=[A zeros(m,1)];
-            n+=1;
+            n=n+1;
             B=[B;zeros(1,y)];
-            x+=1;
+            x=x+1;
         end
         if mod(y,2)==1
             B=[B zeros(x,1)];
-            y+=1;
+            y=y+1;
         end
         C=strassen(A,B,m,n,y);
         C=C(1:orim,1:oriy);
@@ -59,7 +59,7 @@ function [C] = matmulf(A,B)
         for j=1:y
             c=0;
             for k=1:n
-                c+=AT(k,i)*B(k,j);
+                c=c+AT(k,i)*B(k,j);
             end
             C(i,j)=c;
         end

@@ -56,7 +56,7 @@ function [alpha,tau,v] = householder_lapack(A,n)
     alpha=1/(alpha-beta);
     v(1)=1/alpha;
     v(2:end)=A(2:end);
-    tau*=(alpha*alpha');
+    tau=tau*(alpha*alpha');
     alpha=beta;
 end
 
@@ -70,12 +70,12 @@ function [U,S,V] = dk_svd(B,U,V,n)
     while 1
         e=upperd;
         while e>1&&abs(B(e-1,e))<1e-15
-            e-=1;
-            upperd-=1;
+            e=e-1;
+            upperd=upperd-1;
         end
         s=e-1;
         while s>1&&abs(B(s-1,s))>1e-15
-            s-=1;
+            s=s-1;
         end
         if e==1
             break
@@ -312,7 +312,7 @@ end
 function [S,V] = change_signval(S,V,r)
     for i=1:r
         if S(r,r)<0
-            S(r,r)*=-1;
+            S(r,r)=S(r,r)*-1;
             V(:,r)=scalemat(-1,V(:,r));
         end
     end
@@ -323,7 +323,7 @@ function [X] = scalemat(t,X)
     [m,n]=size(X);
     for i=1:m
         for j=1:n
-            X(i,j)*=t;
+            X(i,j)=X(i,j)*t;
         end
     end
 end
@@ -354,7 +354,7 @@ function [C] = matmulf(A,B)
             oriy=y;
             if mod(y,2)==1
                 B=[B zeros(x,1)];
-                y+=1;
+                y=y+1;
             end
             C=twotwoleft(A,B,x,y);
             C=C(1:orix,1:oriy);
@@ -367,7 +367,7 @@ function [C] = matmulf(A,B)
             orin=n;
             if mod(m,2)==1
                 A=[A;zeros(1,n)];
-                m+=1;
+                m=m+1;
             end
             C=twotwoleft(B',A',n,m);
             C=C(1:orin,1:orim)';
@@ -381,17 +381,17 @@ function [C] = matmulf(A,B)
         oriy=y;
         if mod(m,2)==1
             A=[A;zeros(1,n)];
-            m+=1;
+            m=m+1;
         end
         if mod(n,2)==1
             A=[A zeros(m,1)];
-            n+=1;
+            n=n+1;
             B=[B;zeros(1,y)];
-            x+=1;
+            x=x+1;
         end
         if mod(y,2)==1
             B=[B zeros(x,1)];
-            y+=1;
+            y=y+1;
         end
         C=strassen(A,B,m,n,y);
         C=C(1:orim,1:oriy);
@@ -403,7 +403,7 @@ function [C] = matmulf(A,B)
         for j=1:y
             c=0;
             for k=1:n
-                c+=AT(k,i)*B(k,j);
+                c=c+AT(k,i)*B(k,j);
             end
             C(i,j)=c;
         end
