@@ -126,7 +126,7 @@ def get_run_cmd(args, data_name, label_name):
         sh = sh.rstrip('.m')
         cmd = f'matlab -nodesktop -nosplash --path code/ --path utils/ -r {sh} {cmd_args}'
     else:
-        cmd = f'octave-cli --path code/ --path utils/ {sh} {cmd_args}'
+        cmd = f'octave-cli --path dist/ --path utils/ {sh} {cmd_args}'
     return cmd
 
 
