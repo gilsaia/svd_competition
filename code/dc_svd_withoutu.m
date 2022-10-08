@@ -1,4 +1,4 @@
-function [U,S,V] = dc_svd(B,n,r)
+function [S,V] = dc_svd_withoutu(B,n,r)
     % B is down trian(B') and add zeros
     if r<2
         % need to recovery B
@@ -51,17 +51,7 @@ function [U,S,V] = dc_svd(B,n,r)
     for i=r+1:n
         w(i)=0;
     end
-    U=zeros(n,n);
     V=zeros(n,n);
-    for i=1:n
-        ui=zeros(n,1);
-        for j=1:n
-            ui(j)=sigma(j)/(d2(j)-w(i));
-        end
-        uino=norm(ui,'fro');
-        ui=scalemat(1/uino,ui);
-        U(:,i)=ui;
-    end
     for i=1:n
         vi=zeros(n,1);
         vi(1)=-1;
@@ -76,6 +66,5 @@ function [U,S,V] = dc_svd(B,n,r)
     for i=1:r
         signval(i)=sqrt(w(i));
     end
-    U=[U zeros(n,1);zeros(1,n) 1];
     S=diag(signval);
 end
