@@ -300,10 +300,10 @@ end
 function [U,B,V] = implicitQR(B,U,V,st)
     n=size(B,1);
     for i=1:n-1
-        [c s r]=rot(B(i,i),B(i,i+1));
+        [c,s,r]=rot(B(i,i),B(i,i+1));
         B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
         V(:,st+i-1:st+i)=matmulf(V(:,st+i-1:st+i),[c -s;s c]);
-        [c s r]=rot(B(i,i),B(i+1,i));
+        [c,s,r]=rot(B(i,i),B(i+1,i));
         B(i:i+1,i:min(i+2,n))=updateBright(B(i:i+1,i:min(i+2,n)),c,s);
         U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
     end
