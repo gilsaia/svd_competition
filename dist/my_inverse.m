@@ -405,9 +405,9 @@ end
 function [U,B] = implicitQR(B,U,st)
     n=size(B,1);
     for i=1:n-1
-        [c s r]=rot(B(i,i),B(i,i+1));
+        [c,s,r]=rot(B(i,i),B(i,i+1));
         B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
-        [c s r]=rot(B(i,i),B(i+1,i));
+        [c,s,r]=rot(B(i,i),B(i+1,i));
         B(i:i+1,i:min(i+2,n))=updateBright(B(i:i+1,i:min(i+2,n)),c,s);
         U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
     end
@@ -423,11 +423,11 @@ function [U,B] = standardQR(B,U,st)
     x=B(1,1)^2-mu;
     z=B(1,1)*B(1,2);
     for i=1:n-1
-        [c s r]=rot(x,z);
+        [c,s,r]=rot(x,z);
         B(max(i-1,1):i+1,i:i+1)=updateBleft(B(max(i-1,1):i+1,i:i+1),c,s);
         x=B(i,i);
         z=B(i+1,i);
-        [c s r]=rot(x,z);
+        [c,s,r]=rot(x,z);
         B(i:i+1,i:min(i+2,n))=updateBright(B(i:i+1,i:min(i+2,n)),c,s);
         U(:,st+i-1:st+i)=matmulf(U(:,st+i-1:st+i),[c -s;s c]);
         if i<n-1
