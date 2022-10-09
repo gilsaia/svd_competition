@@ -187,7 +187,7 @@ function [alpha,tau,v] = householder_lapack(A,n)
     alphi=imag(alpha);
     v=zeros(n,1);
     v(1)=1;
-    if xnorm==0 && alphi==0
+    if xnorm<1e-14 && abs(alphi)<1e-14
         tau=0;
         return
     end
