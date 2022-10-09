@@ -48,6 +48,10 @@ function [U,S,V] = dc_svd(B,n,r)
         d2(i)=d(i)^2;
     end
     [w]=sv_approx(sigma2,d2,r,n);
+    disp('Sigma');
+    disp(sigmas);
+    disp('D');
+    disp(d);
     for i=r+1:n
         w(i)=0;
     end
@@ -56,7 +60,7 @@ function [U,S,V] = dc_svd(B,n,r)
     for i=1:n
         ui=zeros(n,1);
         for j=1:n
-            ui(j)=sigma(j)/(d2(j)-w(i));
+            ui(j)=sigmas(j)/(d2(j)-w(i));
         end
         uino=norm(ui,'fro');
         ui=scalemat(1/uino,ui);
@@ -66,7 +70,7 @@ function [U,S,V] = dc_svd(B,n,r)
         vi=zeros(n,1);
         vi(1)=-1;
         for j=2:n
-            vi(j)=d(j)*sigma(j)/(d2(j)-w(i));
+            vi(j)=d(j)*sigmas(j)/(d2(j)-w(i));
         end
         vino=norm(vi,'fro');
         vi=scalemat(1/vino,vi);

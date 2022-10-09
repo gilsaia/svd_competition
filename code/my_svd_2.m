@@ -1,10 +1,10 @@
 function [u,s,v]=my_svd_2(A)
     [m,n]=size(A);
     [u,b,v,r]=bidiagonal_r_guess(A,n/2+1,m,n);
-    if r>256
+    if r>2
         % prepare b
         bt=[b';zeros(1,n)];
-        [ut,s,vt]=dc_svd(b,n,r);
+        [ut,s,vt]=dc_svd(bt,n,r);
         % dc output ut is v,vt is u
         ut=ut(1:n,1:n);
         v=matmulf(v,ut);

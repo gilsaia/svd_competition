@@ -5,7 +5,7 @@ function [inv_AA] = my_inverse(A)
     if r>256
         % prepare b
         bt=[b';zeros(1,n)];
-        [s,vt]=dc_svd_withoutu(b,n,r);
+        [s,vt]=dc_svd_withoutu(bt,n,r);
         % dc output ut is v,vt is u
         u=matmulf(u,[vt zeros(n,m-n);zeros(m-n,n) eye(m-n,m-n)]);
     else

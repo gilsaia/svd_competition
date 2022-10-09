@@ -4,7 +4,7 @@ function [w]=sv_approx(s,delta,r,n)
     for i=1:n
         presum=presum+s(i);
     end
-    delta(n+1)=presum;
+    delta(n+1)=delta(n)+presum;
     for i=n:-1:n-r+1
         y=get_init(i,s,delta,n);
         % disp(y);
@@ -103,7 +103,7 @@ function [y]=get_init(k,s,delta,n)
             end
         end
     end
-    y=min(tau+delta(K),(delta(n)+delta(n+1))/2)
+    y=min(tau+delta(K),(delta(n)+delta(n+1))/2);
 end
 
 

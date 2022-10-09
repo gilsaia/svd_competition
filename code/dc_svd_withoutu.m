@@ -56,7 +56,7 @@ function [S,V] = dc_svd_withoutu(B,n,r)
         vi=zeros(n,1);
         vi(1)=-1;
         for j=2:n
-            vi(j)=d(j)*sigma(j)/(d2(j)-w(i));
+            vi(j)=d(j)*sigmas(j)/(d2(j)-w(i));
         end
         vino=norm(vi,'fro');
         vi=scalemat(1/vino,vi);

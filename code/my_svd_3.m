@@ -4,7 +4,7 @@ function [u,s,v]=my_svd_3(A)
     if r>256
         % prepare b
         bt=[b';zeros(1,n)];
-        [ut,s,vt]=dc_svd(b,n,r);
+        [ut,s,vt]=dc_svd(bt,n,r);
         % dc output ut is v,vt is u
         ut=ut(1:n,1:n);
         v=matmulf(v,ut);
