@@ -39,7 +39,7 @@ function [U,B,V,r] = bidiagonal_r_guess_energy(A,bound,m,n)
         end
         if bisum~=0&&(abs(d(j))+abs(e(j)))/bisum<1e-5
             r=j;
-            disp(r);
+            %disp(r);
             break
         end
         bisum=bisum+abs(d(j))+abs(e(j));
